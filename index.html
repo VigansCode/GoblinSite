@@ -1421,14 +1421,14 @@ function voteMeme(type) {
     if (!memeVotes.hasVoted) {
         if (type === 'up') {
             memeVotes.likes += 1;
-            // Add floating emoji effect
+            document.getElementById('likeCount').textContent = memeVotes.likes;
             createFloatingEmoji('👍', 'likeButton');
         } else {
             memeVotes.dislikes += 1;
+            document.getElementById('dislikeCount').textContent = memeVotes.dislikes;
             createFloatingEmoji('👎', 'dislikeButton');
         }
         memeVotes.hasVoted = true;
-        updateVoteDisplay();
     }
 }
 
