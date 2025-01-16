@@ -1328,12 +1328,12 @@ updateMarketData(); // Initial update
 
 // Leaderboard functionality
 const goblins = [
-    { name: "GoblinKing.eth", profit: 1337, amount: 420 },
+    { name: "GoblinKing", profit: 1337, amount: 420 },
     { name: "0xDegen...69420", profit: 789, amount: 250 },
     { name: "PepeLord", profit: 456, amount: 125 },
     { name: "RektHunter.sol", profit: 398, amount: 98 },
     { name: "MoonWarrior", profit: 357, amount: 87 },
-    { name: "DiamondHands.eth", profit: 299, amount: 76 },
+    { name: "DiamondHands", profit: 299, amount: 76 },
     { name: "APEmaster", profit: 275, amount: 65 },
     { name: "Wojak.sol", profit: 245, amount: 55 },
     { name: "BullMarketBen", profit: 225, amount: 45 },
@@ -1392,9 +1392,9 @@ function updateLeaderboard() {
     });
 }
 
-// Update every 10 seconds
+// Update every 2.5 seconds
 clearInterval(updateLeaderboard); // Clear any existing interval
-setInterval(updateLeaderboard, 10000);
+setInterval(updateLeaderboard, 2500);
 
 // Initial update
 updateLeaderboard();
