@@ -1325,28 +1325,33 @@ const goblins = [
 ];
 
 function updateLeaderboard() {
-    // More dramatic random adjustments
+    // Add randomization to dramatically change rankings
     goblins.forEach(goblin => {
-        // Increased range from (-10, +10) to (-30, +30) for more volatility
-        const change = Math.random() * 60 - 30; 
+        // Add random "hot streak" factor
+        const hotStreak = Math.random() < 0.3; // 30% chance of hot streak
         
-        // Add occasional big moves (10% chance)
-        if (Math.random() < 0.1) {
-            const bigMove = (Math.random() * 100) - 50; // -50 to +50 big swing
-            goblin.profit += bigMove;
-            goblin.amount += (bigMove/100) * goblin.amount;
+        if (hotStreak) {
+            // Big positive move to potentially jump positions
+            const jumpMove = Math.random() * 1000 + 500; // 500-1500 jump
+            goblin.profit += jumpMove;
+            goblin.amount += (jumpMove/100) * goblin.amount;
+        } else {
+            // Normal volatility with possibility of drops
+            const change = (Math.random() * 200) - 100; // -100 to +100 for more dramatic swings
+            goblin.profit += change;
+            goblin.amount += (change/100) * goblin.amount;
         }
-        
-        goblin.profit += change;
-        goblin.amount += (change/100) * goblin.amount;
 
-        // Ensure profit doesn't go below 100% (they're all in profit)
+        // Ensure minimum values
         goblin.profit = Math.max(100, goblin.profit);
         goblin.amount = Math.max(40, goblin.amount);
     });
 
-    // Sort by profit for rankings
-    goblins.sort((a, b) => b.profit - a.profit);
+    // Randomly shuffle close performers to create more position changes
+    goblins.sort((a, b) => {
+        const randomFactor = (Math.random() - 0.5) * 200; // Add random noise to sorting
+        return (b.profit + randomFactor) - a.profit;
+    });
 
     // Update display
     const container = document.getElementById('topGoblinsContainer');
@@ -1370,7 +1375,8 @@ function updateLeaderboard() {
     });
 }
 
-// Update more frequently - every 10 seconds instead of 30
+// Update every 10 seconds
+clearInterval(updateLeaderboard); // Clear any existing interval
 setInterval(updateLeaderboard, 10000);
 
 // Initial update
