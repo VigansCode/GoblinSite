@@ -615,11 +615,11 @@ body {
     <div class="flex justify-between items-center mb-6">
         <h2 class="text-xl font-bold">Meme of the Day</h2>
         <div class="flex gap-2">
-            <button onclick="voteMeme('up')" class="button-primary px-4 py-2 rounded-lg">
-                👍 420
+            <button onclick="voteMeme('up')" class="button-primary px-4 py-2 rounded-lg" id="likeButton">
+                👍 <span id="likeCount">420</span>
             </button>
-            <button onclick="voteMeme('down')" class="button-primary px-4 py-2 rounded-lg">
-                👎 69
+            <button onclick="voteMeme('down')" class="button-primary px-4 py-2 rounded-lg" id="dislikeButton">
+                👎 <span id="dislikeCount">69</span>
             </button>
         </div>
     </div>
@@ -1398,6 +1398,58 @@ setInterval(updateLeaderboard, 2500);
 
 // Initial update
 updateLeaderboard();
+
+// Meme voting functionality
+let memeVotes = {
+    likes: 420,
+    dislikes: 69,
+    hasVoted: false
+};
+
+function updateVoteDisplay() {
+    document.getElementById('likeCount').textContent = memeVotes.likes;
+    document.getElementById('dislikeCount').textContent = memeVotes.dislikes;
+}
+
+function voteMeme(type) {
+    if (!memeVotes.hasVoted) {
+        if (type === 'up') {
+            memeVotes.likes += 1;
+            // Add floating emoji effect
+            createFloatingEmoji('👍', 'likeButton');
+        } else {
+            memeVotes.dislikes += 1;
+            createFloatingEmoji('👎', 'dislikeButton');
+        }
+        memeVotes.hasVoted = true;
+        updateVoteDisplay();
+    }
+}
+
+function createFloatingEmoji(emoji, buttonId) {
+    const button = document.getElementById(buttonId);
+    const rect = button.getBoundingClientRect();
+    
+    const floatingEmoji = document.createElement('div');
+    floatingEmoji.className = 'float-emoji';
+    floatingEmoji.textContent = emoji;
+    floatingEmoji.style.left = `${rect.left + rect.width/2}px`;
+    floatingEmoji.style.top = `${rect.top}px`;
+    
+    document.body.appendChild(floatingEmoji);
+    setTimeout(() => floatingEmoji.remove(), 2000);
+}
+
+// Auto-increment votes
+setInterval(() => {
+    memeVotes.likes++;
+    updateVoteDisplay();
+}, 4000);
+
+setInterval(() => {
+    memeVotes.dislikes++;
+    updateVoteDisplay();
+}, 25000);
 
 // Initialize Ably
 const ably = new Ably.Realtime('NicXIg.8aDmXA:AxQfXY9dp3pYbhAqkc-J6_PcCKfz8Iuui6lkroiZ29w');
