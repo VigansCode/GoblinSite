@@ -1074,12 +1074,12 @@ setInterval(updateTickerUI, 300000); // Update every 5 minutes
                 ];
                 response = goodbyes[Math.floor(Math.random() * goodbyes.length)];
             }
-            // Yes/Agree responses
-            else if (msg.includes('yes') || msg.includes('ok') || msg.includes('sure') || msg.includes('of course')) {
-                const agreements = [
-                    "*happy goblin dance* YIPPEEE! New friend understands! 💃",
-                    "*excited crayon waving* THIS WHY GOBLIN LIKE YOU! Smart thinking! 🖍️",
-                    "*joyful rock juggling* KNEW YOU WERE SPECIAL! Want lucky rock? 🪨"
+            // Yes/Agree responses with specific 'yes please' handler
+            else if (msg.includes('yes please')) {
+                const yesPlease = [
+                    "*adjusts trading charts* FIRST OPPORTUNITY: $PEPE forming golden cross! Second: $WOJAK whale accumulation detected! Third: $BONK volume spike incoming! Which one interest you most, fren? 📊",
+                    "*pulls out ancient scrolls* LISTEN CLOSE! Three moonshots spotted: $SHIB breaking resistance, $DOGE forming bull flag, and $PEPE whale accumulation! Want to hear analysis? 🚀",
+                    "*excitedly shuffles through charts* BIG MOVES COMING! Spotted three setups: Bottom formation on $WOJAK, accumulation phase on $PEPE, and breakout pattern on $BONK! Which shall we examine? 🔍"
                 ];
                 response = agreements[Math.floor(Math.random() * agreements.length)];
             }
