@@ -9,12 +9,18 @@
     <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
     <script src="https://cdn.ably.io/lib/ably.min-1.js"></script>
     <style>
-body {
-    background-color: #0a0614;
-    position: relative;
-    overflow-x: hidden;
-    color: white; /* Add this line */
-}
+        body {
+            background-color: #0a0614;
+            position: relative;
+            overflow-x: hidden;
+            color: white;
+        }
+        
+        .button-primary-active {
+            background: #9333EA !important; /* Brighter purple to show it's been clicked */
+            transform: scale(0.95);
+            transition: all 0.3s ease;
+        }
 
 #neuralgrid {
     position: fixed;
@@ -1415,14 +1421,18 @@ function voteMeme(type) {
     if (!memeVotes.hasVoted) {
         if (type === 'up') {
             memeVotes.likes += 1;
+            // Show instant feedback by incrementing displayed number
+            document.getElementById('likeButton').classList.add('button-primary-active');
             // Add floating emoji effect
             createFloatingEmoji('👍', 'likeButton');
         } else {
             memeVotes.dislikes += 1;
+            // Show instant feedback by incrementing displayed number
+            document.getElementById('dislikeButton').classList.add('button-primary-active');
             createFloatingEmoji('👎', 'dislikeButton');
         }
         memeVotes.hasVoted = true;
-        updateVoteDisplay();
+        updateVoteDisplay(); // This will update the display immediately
     }
 }
 
