@@ -309,7 +309,23 @@ body {
     transform: translateY(1px);
     box-shadow: 0 2px 8px rgba(34, 211, 238, 0.2);
 }
-    </style>
+
+/* Add the new animations here */
+@keyframes highlight {
+    0% { transform: scale(1); background: rgba(124, 58, 237, 0.5); }
+    50% { transform: scale(1.02); background: rgba(124, 58, 237, 0.3); }
+    100% { transform: scale(1); background: rgba(45, 27, 105, 0.3); }
+}
+
+.position-change {
+    animation: highlight 1s ease;
+}
+
+.leaderboard-row {
+    transition: all 0.5s ease;
+    transform-origin: center;
+}
+</style>
 </head>
 <body>
     <canvas id="neuralgrid"></canvas>
@@ -1325,43 +1341,44 @@ const goblins = [
 ];
 
 function updateLeaderboard() {
-    // Add randomization to dramatically change rankings
+    // Store previous rankings for comparison
+    const previousRankings = goblins.map(g => g.name);
+    
+    // Update logic
     goblins.forEach(goblin => {
-        // Add random "hot streak" factor
-        const hotStreak = Math.random() < 0.3; // 30% chance of hot streak
+        const hotStreak = Math.random() < 0.3;
         
         if (hotStreak) {
-            // Big positive move to potentially jump positions
-            const jumpMove = Math.random() * 1000 + 500; // 500-1500 jump
+            const jumpMove = Math.random() * 1000 + 500;
             goblin.profit += jumpMove;
             goblin.amount += (jumpMove/100) * goblin.amount;
         } else {
-            // Normal volatility with possibility of drops
-            const change = (Math.random() * 200) - 100; // -100 to +100 for more dramatic swings
+            const change = (Math.random() * 200) - 100;
             goblin.profit += change;
             goblin.amount += (change/100) * goblin.amount;
         }
-
-        // Ensure minimum values
         goblin.profit = Math.max(100, goblin.profit);
         goblin.amount = Math.max(40, goblin.amount);
     });
 
-    // Randomly shuffle close performers to create more position changes
+    // Sort with random factor
     goblins.sort((a, b) => {
-        const randomFactor = (Math.random() - 0.5) * 200; // Add random noise to sorting
+        const randomFactor = (Math.random() - 0.5) * 200;
         return (b.profit + randomFactor) - a.profit;
     });
 
-    // Update display
+    // Update display with animation
     const container = document.getElementById('topGoblinsContainer');
     container.innerHTML = '';
-
     const medals = ["👑", "🥈", "🥉", "4️⃣", "5️⃣"];
     
     goblins.slice(0, 5).forEach((goblin, index) => {
+        const previousPosition = previousRankings.indexOf(goblin.name);
+        const hasMovedPosition = previousPosition !== index;
+        
         container.innerHTML += `
-            <div class="flex items-center justify-between bg-purple-900 bg-opacity-30 p-3 rounded-lg">
+            <div class="flex items-center justify-between bg-purple-900 bg-opacity-30 p-3 rounded-lg leaderboard-row ${hasMovedPosition ? 'position-change' : ''}" 
+                 style="transition-delay: ${index * 0.1}s">
                 <div class="flex items-center gap-2">
                     <span class="text-2xl">${medals[index]}</span>
                     <div>
