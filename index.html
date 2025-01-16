@@ -1325,14 +1325,27 @@ const goblins = [
 ];
 
 function updateLeaderboard() {
-    // Randomly adjust profits
+    // More dramatic random adjustments
     goblins.forEach(goblin => {
-        const change = Math.random() * 20 - 10; // -10 to +10
+        // Increased range from (-10, +10) to (-30, +30) for more volatility
+        const change = Math.random() * 60 - 30; 
+        
+        // Add occasional big moves (10% chance)
+        if (Math.random() < 0.1) {
+            const bigMove = (Math.random() * 100) - 50; // -50 to +50 big swing
+            goblin.profit += bigMove;
+            goblin.amount += (bigMove/100) * goblin.amount;
+        }
+        
         goblin.profit += change;
         goblin.amount += (change/100) * goblin.amount;
+
+        // Ensure profit doesn't go below 100% (they're all in profit)
+        goblin.profit = Math.max(100, goblin.profit);
+        goblin.amount = Math.max(40, goblin.amount);
     });
 
-    // Sort by profit
+    // Sort by profit for rankings
     goblins.sort((a, b) => b.profit - a.profit);
 
     // Update display
@@ -1357,8 +1370,8 @@ function updateLeaderboard() {
     });
 }
 
-// Update every 30 seconds
-setInterval(updateLeaderboard, 30000);
+// Update more frequently - every 10 seconds instead of 30
+setInterval(updateLeaderboard, 10000);
 
 // Initial update
 updateLeaderboard();
