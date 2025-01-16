@@ -537,40 +537,59 @@ body {
         </div>
     </div>
 
-    <!-- Top Traders -->
-    <div class="goblin-card p-6">
-        <h2 class="text-xl font-bold mb-4">Top Goblins</h2>
-        <div class="space-y-4">
-            <div class="flex items-center justify-between bg-purple-900 bg-opacity-30 p-3 rounded-lg">
-                <div class="flex items-center gap-2">
-                    <span class="text-2xl">👑</span>
-                    <div>
-                        <div class="font-bold">GoblinKing.eth</div>
-                        <div class="text-sm text-purple-300">+1337% all time</div>
-                    </div>
+<!-- Top Traders -->
+<div class="goblin-card p-6">
+    <h2 class="text-xl font-bold mb-4">Top Goblins</h2>
+    <div class="space-y-4" id="topGoblinsContainer">
+        <div class="flex items-center justify-between bg-purple-900 bg-opacity-30 p-3 rounded-lg">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl">👑</span>
+                <div>
+                    <div class="font-bold">GoblinKing.eth</div>
+                    <div class="text-sm text-purple-300">+1337% all time</div>
                 </div>
-                <div class="text-green-400 font-bold">+$420k</div>
             </div>
-            <div class="flex items-center justify-between bg-purple-900 bg-opacity-30 p-3 rounded-lg">
-                <div class="flex items-center gap-2">
-                    <span class="text-2xl">🥈</span>
-                    <div>
-                        <div class="font-bold">0xDegen...69420</div>
-                        <div class="text-sm text-purple-300">+789% all time</div>
-                    </div>
+            <div class="text-green-400 font-bold">+$420k</div>
+        </div>
+        <div class="flex items-center justify-between bg-purple-900 bg-opacity-30 p-3 rounded-lg">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl">🥈</span>
+                <div>
+                    <div class="font-bold">0xDegen...69420</div>
+                    <div class="text-sm text-purple-300">+789% all time</div>
                 </div>
-                <div class="text-green-400 font-bold">+$250k</div>
             </div>
-            <div class="flex items-center justify-between bg-purple-900 bg-opacity-30 p-3 rounded-lg">
-                <div class="flex items-center gap-2">
-                    <span class="text-2xl">🥉</span>
-                    <div>
-                        <div class="font-bold">PepeLord</div>
-                        <div class="text-sm text-purple-300">+456% all time</div>
-                    </div>
+            <div class="text-green-400 font-bold">+$250k</div>
+        </div>
+        <div class="flex items-center justify-between bg-purple-900 bg-opacity-30 p-3 rounded-lg">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl">🥉</span>
+                <div>
+                    <div class="font-bold">PepeLord</div>
+                    <div class="text-sm text-purple-300">+456% all time</div>
                 </div>
-                <div class="text-green-400 font-bold">+$125k</div>
             </div>
+            <div class="text-green-400 font-bold">+$125k</div>
+        </div>
+        <div class="flex items-center justify-between bg-purple-900 bg-opacity-30 p-3 rounded-lg">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl">4️⃣</span>
+                <div>
+                    <div class="font-bold">RektHunter.sol</div>
+                    <div class="text-sm text-purple-300">+398% all time</div>
+                </div>
+            </div>
+            <div class="text-green-400 font-bold">+$98k</div>
+        </div>
+        <div class="flex items-center justify-between bg-purple-900 bg-opacity-30 p-3 rounded-lg">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl">5️⃣</span>
+                <div>
+                    <div class="font-bold">MoonWarrior</div>
+                    <div class="text-sm text-purple-300">+357% all time</div>
+                </div>
+            </div>
+            <div class="text-green-400 font-bold">+$87k</div>
         </div>
     </div>
 </div>
@@ -1290,6 +1309,59 @@ tradingState.trades.unshift(trade);
 // Update market data every 5 minutes (changed from 30 seconds to avoid rate limits)
 setInterval(updateMarketData, 300000);
 updateMarketData(); // Initial update
+
+// Leaderboard functionality
+const goblins = [
+    { name: "GoblinKing.eth", profit: 1337, amount: 420 },
+    { name: "0xDegen...69420", profit: 789, amount: 250 },
+    { name: "PepeLord", profit: 456, amount: 125 },
+    { name: "RektHunter.sol", profit: 398, amount: 98 },
+    { name: "MoonWarrior", profit: 357, amount: 87 },
+    { name: "DiamondHands.eth", profit: 299, amount: 76 },
+    { name: "APEmaster", profit: 275, amount: 65 },
+    { name: "Wojak.sol", profit: 245, amount: 55 },
+    { name: "BullMarketBen", profit: 225, amount: 45 },
+    { name: "GoblinSage", profit: 198, amount: 42 }
+];
+
+function updateLeaderboard() {
+    // Randomly adjust profits
+    goblins.forEach(goblin => {
+        const change = Math.random() * 20 - 10; // -10 to +10
+        goblin.profit += change;
+        goblin.amount += (change/100) * goblin.amount;
+    });
+
+    // Sort by profit
+    goblins.sort((a, b) => b.profit - a.profit);
+
+    // Update display
+    const container = document.getElementById('topGoblinsContainer');
+    container.innerHTML = '';
+
+    const medals = ["👑", "🥈", "🥉", "4️⃣", "5️⃣"];
+    
+    goblins.slice(0, 5).forEach((goblin, index) => {
+        container.innerHTML += `
+            <div class="flex items-center justify-between bg-purple-900 bg-opacity-30 p-3 rounded-lg">
+                <div class="flex items-center gap-2">
+                    <span class="text-2xl">${medals[index]}</span>
+                    <div>
+                        <div class="font-bold">${goblin.name}</div>
+                        <div class="text-sm text-purple-300">+${goblin.profit.toFixed(0)}% all time</div>
+                    </div>
+                </div>
+                <div class="text-green-400 font-bold">+$${goblin.amount.toFixed(0)}k</div>
+            </div>
+        `;
+    });
+}
+
+// Update every 30 seconds
+setInterval(updateLeaderboard, 30000);
+
+// Initial update
+updateLeaderboard();
 
 // Initialize Ably
 const ably = new Ably.Realtime('NicXIg.8aDmXA:AxQfXY9dp3pYbhAqkc-J6_PcCKfz8Iuui6lkroiZ29w');
