@@ -1515,11 +1515,6 @@ function sendLiveMessage() {
     }
 }
 
-// Listen for incoming messages
-channel.subscribe('chat', function(message) {
-    addMessageToUI(message.data);
-});
-
 // Add event listener for live chat input
 document.addEventListener('DOMContentLoaded', () => {
     const liveChatInput = document.getElementById('live-chat-input');
