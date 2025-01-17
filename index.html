@@ -9,6 +9,62 @@
     <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
     <script src="https://cdn.ably.io/lib/ably.min-1.js"></script>
     <style>
+        .chat-message {
+            background: rgba(124, 58, 237, 0.1);
+            border-left: 3px solid #7C3AED;
+            margin: 8px 0;
+            padding: 12px;
+            transition: all 0.3s ease;
+            animation: fadeIn 0.3s ease;
+            border-radius: 4px;
+        }
+        
+        .chat-message:nth-child(even) {
+            background: rgba(124, 58, 237, 0.2);
+            border-left: 3px solid #7C3AED;
+        }
+        
+        .chat-message:hover {
+            transform: translateX(4px);
+        }
+        
+        .chat-username {
+            font-weight: bold;
+            color: #A78BFA;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .chat-timestamp {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.5);
+            margin-left: 8px;
+        }
+        
+        .chat-input-container {
+            position: relative;
+            background: rgba(124, 58, 237, 0.1);
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(124, 58, 237, 0.3);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .new-message {
+            animation: glowPulse 2s;
+        }
+        
+        @keyframes glowPulse {
+            0% { box-shadow: 0 0 5px rgba(124, 58, 237, 0.5); }
+            50% { box-shadow: 0 0 15px rgba(124, 58, 237, 0.5); }
+            100% { box-shadow: 0 0 5px rgba(124, 58, 237, 0); }
+        }
+        </style>
         body {
             background-color: #0a0614;
             position: relative;
@@ -546,18 +602,18 @@
 <div class="goblin-card p-6">
     <h2 class="text-xl font-bold mb-4">Goblin Chat</h2>
     <div id="chat-container" class="h-96 flex flex-col">
-        <div id="live-chat-messages" class="flex-grow overflow-y-auto rounded-lg p-4">
+        <div id="live-chat-messages" class="flex-grow overflow-y-auto rounded-lg p-4 bg-gray-900 bg-opacity-30">
             <!-- Messages will appear here -->
-            </div>
-            <div class="flex gap-2">
-                <input type="text" id="chat-input" placeholder="Type your message..."
-    class="flex-grow bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white font-mono">
-                <button onclick="sendLiveMessage()" class="button-primary px-4 py-2 rounded-lg">
-                    Send 🚀
-                </button>
-            </div>
+        </div>
+        <div class="flex gap-2 mt-4">
+            <input type="text" id="live-chat-input" placeholder="Type your message..."
+                class="flex-grow bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+            <button onclick="sendLiveMessage()" class="button-primary px-4 py-2 rounded-lg">
+                Send 🚀
+            </button>
         </div>
     </div>
+</div>
 
 <!-- Top Traders -->
 <div class="goblin-card p-6">
