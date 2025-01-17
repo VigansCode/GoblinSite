@@ -550,7 +550,7 @@
             <!-- Messages will appear here -->
             </div>
             <div class="flex gap-2">
-                <input type="text" id="chat-input" placeholder="Type your message..."
+                <input type="text" id="live-chat-input" placeholder="Type your message..."
     class="flex-grow bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white font-mono">
                 <button onclick="sendLiveMessage()" class="button-primary px-4 py-2 rounded-lg">
                     Send 🚀
@@ -1458,6 +1458,7 @@ setInterval(() => {
 }, 25000);
 
 // Initialize Ably
+// Initialize Ably
 const ably = new Ably.Realtime('NicXIg.8aDmXA:AxQfXY9dp3pYbhAqkc-J6_PcCKfz8Iuui6lkroiZ29w');
 const channel = ably.channels.get('goblin-chat');
 
@@ -1497,32 +1498,6 @@ function addMessageToUI(messageData) {
     localStorage.setItem('goblinChatMessages', JSON.stringify(savedMessages));
 }
 
-function loadSavedMessages() {
-    const messages = JSON.parse(localStorage.getItem('goblinChatMessages') || '[]');
-    const messagesContainer = document.getElementById('live-chat-messages');
-    messagesContainer.innerHTML = ''; 
-    
-    messages.forEach(messageData => {
-        const messageDiv = document.createElement('div');
-        messageDiv.className = 'chat-message';
-        
-        const timestamp = new Date(messageData.timestamp).toLocaleTimeString();
-        
-        messageDiv.innerHTML = `
-            <div class="chat-username">
-                <span>👾</span>
-                <span>${messageData.username}</span>
-                <span class="chat-timestamp">${timestamp}</span>
-            </div>
-            <div class="mt-2">
-                ${messageData.message}
-            </div>
-        `;
-        messagesContainer.appendChild(messageDiv);
-    });
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-}
-
 // Live Chat functionality
 function sendLiveMessage() {
     const input = document.getElementById('live-chat-input');
@@ -1540,8 +1515,22 @@ function sendLiveMessage() {
     }
 }
 
-// Load saved messages when page loads
+// Listen for incoming messages
+channel.subscribe('chat', function(message) {
+    addMessageToUI(message.data);
+});
+
+// Add event listener for live chat input
 document.addEventListener('DOMContentLoaded', () => {
+    const liveChatInput = document.getElementById('live-chat-input');
+    if(liveChatInput) {
+        liveChatInput.addEventListener('keypress', function(e) {
+            if(e.key === 'Enter') {
+                sendLiveMessage();
+            }
+        });
+    }
+    
     loadSavedMessages();
     
     // Request history from Ably
