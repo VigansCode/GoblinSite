@@ -874,8 +874,25 @@ async function updateTickerUI() {
             </span>
         </div>
     `).join('');
+
+    // Update the trending memecoins section with the same data
+    const trendingMemes = document.getElementById('trendingMemes');
+    // Get the first 3 coins for the trending section
+    const topThreeMovers = topMovers.slice(0, 3);
     
-    // Duplicate the content multiple times to ensure full coverage
+    trendingMemes.innerHTML = topThreeMovers.map(coin => `
+        <div class="flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl">🪙</span>
+                <span>${coin.symbol}</span>
+            </div>
+            <span class="${coin.change >= 0 ? 'text-green-400' : 'text-red-400'}">
+                ${coin.change >= 0 ? '+' : ''}${coin.change ? coin.change.toFixed(1) : '0.0'}%
+            </span>
+        </div>
+    `).join('');
+    
+    // Duplicate the content multiple times to ensure full coverage for ticker
     tickerContainer.innerHTML = tickerContent + tickerContent + tickerContent;
     
     // Wait for images to load before starting animation
