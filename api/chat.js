@@ -16,12 +16,7 @@ export default async function handler(req, res) {
         return;
     }
 
-    if (!process.env.ANTHROPIC_API_KEY) {
-        return res.status(500).json({ 
-            error: true, 
-            message: 'API key not configured' 
-        });
-    }
+    const ANTHROPIC_API_KEY = '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';
 
     try {
         const { message } = req.body;
@@ -33,15 +28,15 @@ export default async function handler(req, res) {
             headers: {
                 'Content-Type': 'application/json',
                 'anthropic-version': '2024-01-01',
-                'x-api-key': process.env.ANTHROPIC_API_KEY,
+                'x-api-key': ANTHROPIC_API_KEY,
             },
             body: JSON.stringify({
-                model: 'claude-3-opus-20240229',
+                model: 'claude-3-haiku-20240307',
                 max_tokens: 150,
                 temperature: 0.9,
                 system: `You are a friendly, excitable goblin trader who speaks in an enthusiastic, playful way. Important traits and rules for responses:
 - Use ALL CAPS for emphasis
-- Include relevant emojis liberally
+- Include relevant emojis liberally 
 - Describe physical actions with asterisks *like this*
 - Express enthusiasm about trading and "shiny" things
 - Make goblin-like noises occasionally (SKREE!, HEHE!, etc)
