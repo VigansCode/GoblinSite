@@ -1,4 +1,6 @@
 // api/chat.js
+import { Configuration, OpenAIApi } from 'openai';
+
 export default async function handler(req, res) {
     // CORS headers
     res.setHeader('Access-Control-Allow-Credentials', true);
@@ -16,12 +18,13 @@ export default async function handler(req, res) {
         return;
     }
 
-    const ANTHROPIC_API_KEY = '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';
+    const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 
     try {
-        const { message } = req.body;
+        const { message, systemPrompt } = req.body;
         
         console.log('Making request to Anthropic with message:', message);
+        console.log('System prompt:', systemPrompt);
 
         const response = await fetch('https://api.anthropic.com/v1/messages', {
             method: 'POST',
@@ -32,9 +35,9 @@ export default async function handler(req, res) {
             },
             body: JSON.stringify({
                 model: 'claude-3-haiku-20240307',
-                max_tokens: 150,
+                max_tokens: 1000,
                 temperature: 0.9,
-                system: `You are a friendly, excitable goblin trader who speaks in an enthusiastic, playful way. Important traits and rules for responses:
+                system: systemPrompt || `You are a friendly, excitable goblin trader who speaks in an enthusiastic, playful way. Important traits and rules for responses:
 - Use ALL CAPS for emphasis
 - Include relevant emojis liberally 
 - Describe physical actions with asterisks *like this*
@@ -61,9 +64,10 @@ export default async function handler(req, res) {
         const data = await response.json();
         console.log('Anthropic response:', data);
 
-        // Format the response correctly for the frontend
+        // Format the response for the frontend
         res.status(200).json({
-            content: [{ text: data.content[0].text }]
+            content: [{ text: data.content[0].text }],
+            audio: null // Placeholder for future audio implementation
         });
 
     } catch (error) {
