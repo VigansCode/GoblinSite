@@ -18,8 +18,9 @@ export default async function handler(req, res) {
 
     try {
         const { message } = req.body;
+        
+        console.log('Making request to Anthropic with message:', message); // Debug log
 
-        // Make request to Anthropic API
         const response = await fetch('https://api.anthropic.com/v1/messages', {
             method: 'POST',
             headers: {
@@ -53,15 +54,17 @@ export default async function handler(req, res) {
         if (!response.ok) {
             const errorData = await response.text();
             console.error('Anthropic API error:', errorData);
-            throw new Error('Failed to get response from Claude');
+            throw new Error(`Anthropic API error: ${errorData}`);
         }
 
         const data = await response.json();
+        console.log('Anthropic response:', data); // Debug log
+        
         res.status(200).json(data);
     } catch (error) {
-        console.error('Server error:', error);
+        console.error('Detailed error:', error);
         res.status(500).json({ 
-            content: "*drops crayon in confusion* OOPS! Goblin brain had small error! Try again? 🖍️"
+            content: `*drops crayon in confusion* OOPS! Goblin brain had small error! (${error.message}) Try again? 🖍️`
         });
     }
 }
