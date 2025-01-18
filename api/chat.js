@@ -1,6 +1,6 @@
 // api/chat.js
 export default async function handler(req, res) {
-    // Handle CORS
+    // CORS headers stay the same
     res.setHeader('Access-Control-Allow-Credentials', true);
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
@@ -19,7 +19,7 @@ export default async function handler(req, res) {
     try {
         const { message } = req.body;
         
-        console.log('Making request to Anthropic with message:', message); // Debug log
+        console.log('Making request to Anthropic with message:', message);
 
         const response = await fetch('https://api.anthropic.com/v1/messages', {
             method: 'POST',
@@ -51,6 +51,8 @@ export default async function handler(req, res) {
             })
         });
 
+        console.log('Response status:', response.status); // Debug log
+
         if (!response.ok) {
             const errorData = await response.text();
             console.error('Anthropic API error:', errorData);
@@ -59,8 +61,12 @@ export default async function handler(req, res) {
 
         const data = await response.json();
         console.log('Anthropic response:', data); // Debug log
-        
-        res.status(200).json(data);
+
+        // Send just the message content back
+        res.status(200).json({ 
+            content: data.content[0].text 
+        });
+
     } catch (error) {
         console.error('Detailed error:', error);
         res.status(500).json({ 
