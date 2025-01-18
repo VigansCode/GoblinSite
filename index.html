@@ -725,56 +725,41 @@ async function sendMessage() {
     
     if(msg) {
         const history = document.getElementById('chat-history');
-        // Add user message to chat
         history.innerHTML += '<div class="terminal-line" style="color: #ffffff">You: ' + msg + '</div>';
         input.value = '';
         
         try {
-            // Show typing indicator
             const typingIndicator = '<div class="terminal-line" style="color: #00ff00" id="typing-indicator">Goblin: *thinking goblin thoughts* 💭</div>';
             history.innerHTML += typingIndicator;
             history.scrollTop = history.scrollHeight;
 
-            // Make API request to your backend endpoint
             const response = await fetch('/api/chat', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    message: msg,
-                    systemPrompt: SYSTEM_PROMPT
+                    message: msg
                 })
             });
 
-            // Remove typing indicator
             const typingElem = document.getElementById('typing-indicator');
-            if (typingElem) {
-                typingElem.remove();
-            }
+            if (typingElem) typingElem.remove();
 
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'API Error');
+                throw new Error('API Error');
             }
 
             const data = await response.json();
             
-            // Handle the response
             if (data?.content?.[0]?.text) {
-                const goblinResponse = data.content[0].text;
-                // Add goblin's response to chat with animation
-                addAnimatedResponse(goblinResponse, history);
+                history.innerHTML += '<div class="terminal-line" style="color: #00ff00">Goblin: ' + data.content[0].text + '</div>';
             } else {
                 throw new Error('Invalid response format');
             }
-            
         } catch (error) {
             console.error('Chat error:', error);
-            const errorMessage = error.message === 'API Error' 
-                ? '*drops crayon in confusion* OOPS! Goblin brain had small error! Try again? 🖍️'
-                : `*confused goblin noises* Error: ${error.message} 🖍️`;
-            history.innerHTML += '<div class="terminal-line" style="color: #00ff00">Goblin: ' + errorMessage + '</div>';
+            history.innerHTML += '<div class="terminal-line" style="color: #00ff00">Goblin: *drops crayon in confusion* OOPS! Goblin brain had small error! Try again? 🖍️</div>';
         }
 
         history.scrollTop = history.scrollHeight;
