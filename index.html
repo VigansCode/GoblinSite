@@ -972,7 +972,8 @@ setInterval(updateTickerUI, 300000); // Update every 5 minutes
             }
 
             const data = await response.json();
-            const goblinResponse = data.content;
+            // Handle the response format correctly
+            const goblinResponse = data.content[0]?.text || data.content;
 
             // Add Claude's response to chat
             history.innerHTML += '<div class="terminal-line" style="color: #00ff00">Goblin: ' + goblinResponse + '</div>';
