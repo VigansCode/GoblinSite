@@ -754,25 +754,27 @@ async function sendMessage() {
             }
 
             if (!response.ok) {
-                throw new Error('API request failed');
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'API Error');
             }
 
             const data = await response.json();
             
             // Handle the response
-            if (data.error) {
-                throw new Error(data.message);
+            if (data?.content?.[0]?.text) {
+                const goblinResponse = data.content[0].text;
+                // Add goblin's response to chat
+                history.innerHTML += '<div class="terminal-line" style="color: #00ff00">Goblin: ' + goblinResponse + '</div>';
+            } else {
+                throw new Error('Invalid response format');
             }
-
-            const goblinResponse = data.content && data.content[0] ? data.content[0].text : 
-                                '*confused goblin noises* SKREE! Something went wrong! 🖍️';
-
-            // Add goblin's response to chat
-            history.innerHTML += '<div class="terminal-line" style="color: #00ff00">Goblin: ' + goblinResponse + '</div>';
             
         } catch (error) {
             console.error('Chat error:', error);
-            history.innerHTML += '<div class="terminal-line" style="color: #00ff00">Goblin: *drops crayon in confusion* OOPS! Goblin brain had small error! Try again? 🖍️</div>';
+            const errorMessage = error.message === 'API Error' 
+                ? '*drops crayon in confusion* OOPS! Goblin brain had small error! Try again? 🖍️'
+                : `*confused goblin noises* Error: ${error.message} 🖍️`;
+            history.innerHTML += '<div class="terminal-line" style="color: #00ff00">Goblin: ' + errorMessage + '</div>';
         }
 
         history.scrollTop = history.scrollHeight;
@@ -1008,65 +1010,6 @@ setInterval(updateTickerUI, 300000); // Update every 5 minutes
         });
     });
 
-    async function sendMessage() {
-    const input = document.getElementById('chat-input');
-    const msg = input.value.trim();
-    
-    if(msg) {
-        const history = document.getElementById('chat-history');
-        // Add user message to chat
-        history.innerHTML += '<div class="terminal-line" style="color: #ffffff">You: ' + msg + '</div>';
-        input.value = '';
-        
-        try {
-            // Show typing indicator
-            const typingIndicator = '<div class="terminal-line" style="color: #00ff00" id="typing-indicator">Goblin: *thinking goblin thoughts* 💭</div>';
-            history.innerHTML += typingIndicator;
-            history.scrollTop = history.scrollHeight;
-
-            // Make API request to your backend endpoint
-            const response = await fetch('/api/chat', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    message: msg
-                })
-            });
-
-            // Remove typing indicator
-            const typingElem = document.getElementById('typing-indicator');
-            if (typingElem) {
-                typingElem.remove();
-            }
-
-            if (!response.ok) {
-                throw new Error('API request failed');
-            }
-
-            const data = await response.json();
-            
-            // Handle the response based on whether it's an error or success
-            if (data.error) {
-                throw new Error(data.message);
-            }
-
-            const goblinResponse = data.content && data.content[0] ? data.content[0].text : 
-                                (data.message || '*confused goblin noises* SKREE! Something went wrong! 🖍️');
-
-            // Add goblin's response to chat
-            history.innerHTML += '<div class="terminal-line" style="color: #00ff00">Goblin: ' + goblinResponse + '</div>';
-            
-        } catch (error) {
-            console.error('Chat error:', error);
-            // Fallback response if API fails
-            history.innerHTML += '<div class="terminal-line" style="color: #00ff00">Goblin: *drops crayon in confusion* OOPS! Goblin brain had small error! Try again? 🖍️</div>';
-        }
-
-        history.scrollTop = history.scrollHeight;
-    }
-}
         // Execute trade function
         function executeTrade(direction) {
             const amount = parseFloat(document.getElementById('tradeAmount').value);
