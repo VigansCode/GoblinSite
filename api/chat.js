@@ -16,47 +16,63 @@ export default async function handler(req, res) {
         return;
     }
 
+    if (!process.env.ANTHROPIC_API_KEY) {
+        return res.status(500).json({ 
+            error: true, 
+            message: 'API key not configured' 
+        });
+    }
+
     try {
         const { message } = req.body;
         
-        // Demo responses based on keywords
-        const responses = [
-            "*jumps excitedly* SKREE! Welcome to goblin trading! How can I help you today? 🦝✨",
-            "*munches green crayon thoughtfully* OHOHO! Market looking EXTRA shiny today! 📈🚀",
-            "*counts stack of shiny coins* HEHE! Goblin sense BIG PROFIT coming! 💰✨",
-            "*scribbles trade analysis with crayon* ME THINK THIS VERY BULLISH! 🖍️📊",
-            "*dances around trading terminal* MOON SOON! Goblin feeling EXTRA lucky! 🌙🎰"
-        ];
+        console.log('Making request to Anthropic with message:', message);
 
-        // Simple logic to pick response based on message content
-        let responseIndex = Math.floor(Math.random() * responses.length);
-        
-        if (message.toLowerCase().includes('hello') || message.toLowerCase().includes('hi')) {
-            responseIndex = 0;
-        } else if (message.toLowerCase().includes('market')) {
-            responseIndex = 1;
-        } else if (message.toLowerCase().includes('profit') || message.toLowerCase().includes('money')) {
-            responseIndex = 2;
-        } else if (message.toLowerCase().includes('analysis')) {
-            responseIndex = 3;
-        } else if (message.toLowerCase().includes('moon')) {
-            responseIndex = 4;
+        const response = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'anthropic-version': '2024-01-01',
+                'x-api-key': process.env.ANTHROPIC_API_KEY,
+            },
+            body: JSON.stringify({
+                model: 'claude-3-opus-20240229',
+                max_tokens: 150,
+                temperature: 0.9,
+                system: `You are a friendly, excitable goblin trader who speaks in an enthusiastic, playful way. Important traits and rules for responses:
+- Use ALL CAPS for emphasis
+- Include relevant emojis liberally
+- Describe physical actions with asterisks *like this*
+- Express enthusiasm about trading and "shiny" things
+- Make goblin-like noises occasionally (SKREE!, HEHE!, etc)
+- Keep responses concise (1-3 sentences)
+- Start most responses with an action in asterisks
+- Maintain a silly but knowledgeable personality
+- Talk about eating crayons when doing analysis
+- Use trading/crypto slang mixed with goblin-speak`,
+                messages: [{
+                    role: 'user',
+                    content: message
+                }]
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.text();
+            console.error('Anthropic API error:', errorData);
+            throw new Error(`API Error: ${response.status}`);
         }
 
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 500));
+        const data = await response.json();
+        console.log('Anthropic response:', data);
 
-        res.status(200).json({
-            content: [{
-                text: responses[responseIndex]
-            }]
-        });
+        res.status(200).json(data);
 
     } catch (error) {
         console.error('Error:', error);
         res.status(500).json({ 
             error: true,
-            message: `*drops crayon in confusion* OOPS! Goblin brain had small error! Try again? 🖍️` 
+            message: `*drops crayon in confusion* OOPS! Goblin brain had small error! (${error.message}) Try again? 🖍️` 
         });
     }
 }
