@@ -677,7 +677,7 @@
 
 <script>
 // Add at the very top of your script section
-const SYSTEM_PROMPT = `You are a friendly, excitable goblin trader who speaks in an enthusiastic, playful way. Important traits and rules for responses:
+const SYSTEM_PROMPT = `You are a friendly goblin trader who speaks in an enthusiastic, playful way. Important traits and rules for responses:
 - Use ALL CAPS for emphasis
 - Include relevant emojis liberally 
 - Describe physical actions with asterisks *like this*
@@ -780,6 +780,7 @@ async function sendMessage() {
         history.scrollTop = history.scrollHeight;
     }
 }
+
 
 function formatPrice(price) {
     if (price < 0.00001) {
@@ -977,14 +978,6 @@ document.addEventListener('DOMContentLoaded', () => {
 // Initialize and start ticker updates
 updateTickerUI();
 setInterval(updateTickerUI, 300000); // Update every 5 minutes
-        // Add event listener for chat input
-        document.addEventListener('DOMContentLoaded', function() {
-        document.getElementById('chat-input').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
-        });
-    });
 
     // Trading state
     let tradingState = {
@@ -1426,4 +1419,18 @@ document.getElementById('live-chat-input').addEventListener('keypress', function
         sendLiveMessage();
     }
 });
+// ADD THIS RIGHT AFTER IT 👇
+document.addEventListener('DOMContentLoaded', function() {
+    // Chat input handler
+    document.getElementById('chat-input').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    });
+
+        // Send button handler
+        document.querySelector('.send-btn')?.addEventListener('click', sendMessage);
+});
 </script>
+</body>
+</html>
