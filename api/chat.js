@@ -1,80 +1,86 @@
-// api/chat.js
-import { Configuration, OpenAIApi } from 'openai';
-
-export default async function handler(req, res) {
-    // CORS headers
-    res.setHeader('Access-Control-Allow-Credentials', true);
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-    res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
-
-    if (req.method === 'OPTIONS') {
-        res.status(200).end();
-        return;
-    }
-
-    if (req.method !== 'POST') {
-        res.status(405).json({ error: 'Method not allowed' });
-        return;
-    }
-
-    const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
-
+// Update the handleAIResponse function
+async function handleAIResponse(message) {
     try {
-        const { message, systemPrompt } = req.body;
-        
-        console.log('Making request to Anthropic with message:', message);
-        console.log('System prompt:', systemPrompt);
+        const messagesContainer = document.querySelector('.chat-messages');
+        const loadingMessage = document.createElement('div');
+        loadingMessage.classList.add('message', 'assistant-message');
+        loadingMessage.textContent = 'Thinking...';
+        messagesContainer.appendChild(loadingMessage);
 
-        const response = await fetch('https://api.anthropic.com/v1/messages', {
+        const response = await fetch('/api/chat', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'anthropic-version': '2024-01-01',
-                'x-api-key': ANTHROPIC_API_KEY,
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                model: 'claude-3-haiku-20240307',
-                max_tokens: 1000,
-                temperature: 0.9,
-                system: systemPrompt || `You are a friendly, excitable goblin trader who speaks in an enthusiastic, playful way. Important traits and rules for responses:
-- Use ALL CAPS for emphasis
-- Include relevant emojis liberally 
-- Describe physical actions with asterisks *like this*
-- Express enthusiasm about trading and "shiny" things
-- Make goblin-like noises occasionally (SKREE!, HEHE!, etc)
-- Keep responses concise (1-3 sentences)
-- Start most responses with an action in asterisks
-- Maintain a silly but knowledgeable personality
-- Talk about eating crayons when doing analysis
-- Use trading/crypto slang mixed with goblin-speak`,
-                messages: [{
-                    role: 'user',
-                    content: message
-                }]
+                message: message,
+                systemPrompt: SYSTEM_PROMPT
             })
         });
 
+        const data = await response.json();
+
         if (!response.ok) {
-            const errorData = await response.text();
-            console.error('Anthropic API error:', errorData);
-            throw new Error(`API Error: ${response.status}`);
+            throw new Error(data.error || 'API Error');
         }
 
-        const data = await response.json();
-        console.log('Anthropic response:', data);
+        messagesContainer.removeChild(loadingMessage);
 
-        // Format the response for the frontend
-        res.status(200).json({
-            content: [{ text: data.content[0].text }],
-            audio: null // Placeholder for future audio implementation
-        });
-
+        if (data?.content?.[0]?.text) {
+            const fullText = data.content[0].text;
+            addMessage(fullText, 'assistant');
+            
+            // Handle audio if present
+            if (data.audio) {
+                console.log('Audio data received, attempting playback');
+                const audio = new Audio(`data:audio/mpeg;base64,${data.audio}`);
+                
+                try {
+                    await audio.play();
+                } catch (audioError) {
+                    console.error('Audio playback error:', audioError);
+                }
+            }
+        } else {
+            throw new Error('Invalid response format');
+        }
     } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({ 
-            error: true,
-            message: `*drops crayon in confusion* OOPS! Goblin brain had small error! (${error.message}) Try again? 🖍️` 
-        });
+        console.error('Chat error:', error);
+        const errorMessage = error.message === 'API Error' 
+            ? 'Sorry, I encountered a server error. Please try again nya'
+            : `Sorry, I encountered an error: ${error.message} nya`;
+        addMessage(errorMessage, 'assistant');
     }
+}
+
+// Update the addMessage function to handle the response formatting
+function addMessage(message, type) {
+    const messagesContainer = document.querySelector('.chat-messages');
+    const messageDiv = document.createElement('div');
+    messageDiv.classList.add('message', `${type}-message`);
+    
+    if (type === 'assistant') {
+        // For code blocks
+        if (message.includes('```')) {
+            messageDiv.innerHTML = formatCodeBlocks(message);
+        } else {
+            // For regular messages, use typing animation
+            let i = 0;
+            messageDiv.textContent = '';
+            function typeNextCharacter() {
+                if (i < message.length) {
+                    messageDiv.textContent += message[i];
+                    i++;
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                    setTimeout(typeNextCharacter, Math.random() * 20 + 10);
+                }
+            }
+            typeNextCharacter();
+        }
+    } else {
+        messageDiv.textContent = message;
+    }
+    
+    messagesContainer.appendChild(messageDiv);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
