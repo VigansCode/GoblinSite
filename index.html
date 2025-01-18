@@ -763,8 +763,8 @@ async function sendMessage() {
             // Handle the response
             if (data?.content?.[0]?.text) {
                 const goblinResponse = data.content[0].text;
-                // Add goblin's response to chat
-                history.innerHTML += '<div class="terminal-line" style="color: #00ff00">Goblin: ' + goblinResponse + '</div>';
+                // Add goblin's response to chat with animation
+                addAnimatedResponse(goblinResponse, history);
             } else {
                 throw new Error('Invalid response format');
             }
