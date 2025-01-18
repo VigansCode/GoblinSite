@@ -972,10 +972,17 @@ setInterval(updateTickerUI, 300000); // Update every 5 minutes
             }
 
             const data = await response.json();
-const goblinResponse = data.content[0] ? data.content[0].text : data.content;
+            
+            // Handle the response based on whether it's an error or success
+            if (data.error) {
+                throw new Error(data.message);
+            }
 
-// Add Claude's response to chat
-history.innerHTML += '<div class="terminal-line" style="color: #00ff00">Goblin: ' + goblinResponse + '</div>';
+            const goblinResponse = data.content && data.content[0] ? data.content[0].text : 
+                                (data.message || '*confused goblin noises* SKREE! Something went wrong! 🖍️');
+
+            // Add goblin's response to chat
+            history.innerHTML += '<div class="terminal-line" style="color: #00ff00">Goblin: ' + goblinResponse + '</div>';
             
         } catch (error) {
             console.error('Chat error:', error);
