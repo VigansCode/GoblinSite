@@ -1,48 +1,80 @@
+// api/chat.js
 import { Configuration, OpenAIApi } from 'openai';
 
-// Configure OpenAI
-const configuration = new Configuration({
-    apiKey: process.env.OPENAI_API_KEY,
-});
-const openai = new OpenAIApi(configuration);
-
 export default async function handler(req, res) {
-    if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Method not allowed' });
+    // CORS headers
+    res.setHeader('Access-Control-Allow-Credentials', true);
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+    res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
+
+    if (req.method === 'OPTIONS') {
+        res.status(200).end();
+        return;
     }
+
+    if (req.method !== 'POST') {
+        res.status(405).json({ error: 'Method not allowed' });
+        return;
+    }
+
+    const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 
     try {
         const { message, systemPrompt } = req.body;
+        
+        console.log('Making request to Anthropic with message:', message);
+        console.log('System prompt:', systemPrompt);
 
-        if (!message) {
-            return res.status(400).json({ error: 'Message is required' });
-        }
-
-        const completion = await openai.createChatCompletion({
-            model: "gpt-4-turbo-preview",  // or your preferred model
-            messages: [
-                {
-                    role: "system",
-                    content: systemPrompt
-                },
-                {
-                    role: "user",
+        const response = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'anthropic-version': '2024-01-01',
+                'x-api-key': ANTHROPIC_API_KEY,
+            },
+            body: JSON.stringify({
+                model: 'claude-3-haiku-20240307',
+                max_tokens: 1000,
+                temperature: 0.9,
+                system: systemPrompt || `You are a friendly, excitable goblin trader who speaks in an enthusiastic, playful way. Important traits and rules for responses:
+- Use ALL CAPS for emphasis
+- Include relevant emojis liberally 
+- Describe physical actions with asterisks *like this*
+- Express enthusiasm about trading and "shiny" things
+- Make goblin-like noises occasionally (SKREE!, HEHE!, etc)
+- Keep responses concise (1-3 sentences)
+- Start most responses with an action in asterisks
+- Maintain a silly but knowledgeable personality
+- Talk about eating crayons when doing analysis
+- Use trading/crypto slang mixed with goblin-speak`,
+                messages: [{
+                    role: 'user',
                     content: message
-                }
-            ],
-            temperature: 0.7,
-            max_tokens: 500
+                }]
+            })
         });
 
-        const response = {
-            content: [{
-                text: completion.data.choices[0].message.content
-            }]
-        };
+        if (!response.ok) {
+            const errorData = await response.text();
+            console.error('Anthropic API error:', errorData);
+            throw new Error(`API Error: ${response.status}`);
+        }
 
-        res.status(200).json(response);
+        const data = await response.json();
+        console.log('Anthropic response:', data);
+
+        // Format the response for the frontend
+        res.status(200).json({
+            content: [{ text: data.content[0].text }],
+            audio: null // Placeholder for future audio implementation
+        });
+
     } catch (error) {
-        console.error('API Error:', error);
-        res.status(500).json({ error: 'Failed to process request' });
+        console.error('Error:', error);
+        res.status(500).json({ 
+            error: true,
+            message: `*drops crayon in confusion* OOPS! Goblin brain had small error! (${error.message}) Try again? 🖍️` 
+        });
     }
 }
