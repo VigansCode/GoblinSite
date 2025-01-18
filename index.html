@@ -934,223 +934,58 @@ setInterval(updateTickerUI, 300000); // Update every 5 minutes
         });
     });
 
-    function sendMessage() {
-    var input = document.getElementById('chat-input');
-    var msg = input.value.toLowerCase();
+    async function sendMessage() {
+    const input = document.getElementById('chat-input');
+    const msg = input.value.trim();
     
     if(msg) {
-        var history = document.getElementById('chat-history');
+        const history = document.getElementById('chat-history');
+        // Add user message to chat
         history.innerHTML += '<div class="terminal-line" style="color: #ffffff">You: ' + msg + '</div>';
         input.value = '';
         
-        setTimeout(() => {
-            let response;
-            // Basic conversation
-            if (msg.includes('hello') || msg.includes('hi') || msg.includes('hey')) {
-                const greetings = [
-                    "Hey there! Just organizing my trading tokens. How can I help? ✨",
-                    "Welcome! Always good to see a fellow trader. What's on your mind? 🌟",
-                    "Hello! You've caught me during my market research. Need any trading insights? 📊",
-                    "Hi there! Perfect timing - the markets are looking interesting today. 📈",
-                    "Welcome to my trading den! What brings you here today? 💫"
-                ];
-                response = greetings[Math.floor(Math.random() * greetings.length)];
+        try {
+            // Show typing indicator
+            const typingIndicator = '<div class="terminal-line" style="color: #00ff00" id="typing-indicator">Goblin: *thinking goblin thoughts* 💭</div>';
+            history.innerHTML += typingIndicator;
+            history.scrollTop = history.scrollHeight;
+
+            // Make API request to your backend endpoint
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    message: msg
+                })
+            });
+
+            // Remove typing indicator
+            const typingElem = document.getElementById('typing-indicator');
+            if (typingElem) {
+                typingElem.remove();
             }
-            else if (msg.includes('whats up') || msg.includes('what up') || msg.includes('wassup')) {
-                const wassup = [
-                    "*munching on crayons* HAVING SNACK TIME! Want green or red crayon? 🖍️",
-                    "*organizing rock collection* BUSY DAY! Found three lucky rocks! 🪨",
-                    "*jumping excitedly* GOOD THINGS! Found shiny new token! Very sparkly! ✨",
-                    "*playing with pet rock* ROCK BEING STUBBORN! Won't do tricks today! 🪨",
-                    "*sorting crayon box* JUST GOBLIN THINGS! Red ones taste best! 🖍️"
-                ];
-                response = wassup[Math.floor(Math.random() * wassup.length)];
+
+            if (!response.ok) {
+                throw new Error('API request failed');
             }
-            else if (msg.includes('how are you') || msg.includes('how r u') || msg.includes('hows it going')) {
-                const feelings = [
-                    "Doing great! Just finished analyzing today's market trends. How about you? 📊",
-                    "Pretty good! Been watching some interesting price action today. What's your take on the market? 📈",
-                    "Excellent! Just spotted some promising trading opportunities. Want to hear about them? ✨",
-                    "I'm doing well! The market's been keeping me busy. How's your trading going? 💫",
-                    "All good here! Been an interesting day in the markets. What are you trading lately? 🌟"
-                ];
-                response = feelings[Math.floor(Math.random() * feelings.length)];
-            }
-            else if (msg.includes('what') && msg.includes('doing')) {
-                const activities = [
-                    "*organizing crayon box* COLOR COORDINATION IMPORTANT! Red with red, green with green! 🖍️",
-                    "*polishing lucky rocks* ROCK COLLECTION NEEDS SHINE! Very important! 🪨",
-                    "*drawing with crayons* MAKING ART! Looks like chart pattern! 📈",
-                    "*counting shiny tokens* TREASURE INVENTORY! Very serious business! ✨",
-                    "*teaching pet rock tricks* ROCK LEARNING WELL! Almost did rollover! 🪨"
-                ];
-                response = activities[Math.floor(Math.random() * activities.length)];
-            }
-            // Ghukliak Language Section
-            else if (msg.includes('speak ghukliak') || msg.includes('goblin language') || msg.includes('speak goblin')) {
-                const ghukliak = [
-                    "Mi hahgu ran lači! *studying charts* Ta market gur valak! 📊",
-                    "Kur nath mi trade! Ra profits sha kala! 💰",
-                    "Vin lak sha mora... *checks indicators* Gur breakout kala! 📈",
-                    "Ta whales kur nath ra accumulate... Mi sha follow! 🐋",
-                    "Lači gur pump? Sha kala mi predict! *consulting ancient goblin charts* 🚀",
-                    "Mi sha teach vin ghukliak... Ta trading way sha ancient! ✨",
-                    "Ra market gur bearish? Mi still sha bullish! Gur valak! 💎"
-                ];
-                response = ghukliak[Math.floor(Math.random() * ghukliak.length)];
-            }
-            // Trading advice
-            else if (msg.includes('what') && (msg.includes('buy') || msg.includes('coin'))) {
-                const buyAdvice = [
-                    "*pulls out ancient goblin charts* Looking at market signals... PEPE showing strong support! Could be good entry for fellow degen! 📊",
-                    "WOJAK looking juicy right now! *points at chart* Lower highs forming, perfect for goblin accumulation strategy! 📈",
-                    "*studies charts intently* BONK volume increasing! Goblin sensors detect potential moonshot! Not financial advice, just goblin instinct! 🚀",
-                    "Have you seen new $GOBLIN token? *excited jumping* Chart forming beautiful goblin pattern! Very bullish! Much potential! 💎",
-                    "*examines charts with magnifying glass* $SHIB looking ready for breakout! Volume increasing, whales accumulating! 🐋"
-                ];
-                response = buyAdvice[Math.floor(Math.random() * buyAdvice.length)];
-            }
-            // Life and emotional responses
-            else if (msg.includes('life') || msg.includes('lonely') || msg.includes('sad') || msg.includes('depressed') || msg.includes('feeling')) {
-                const emotions = [
-                    "Aww fren! Life tough like catching falling knives. But together STRONG! 💚",
-                    "*gentle goblin pat* Even goblins get lonely! Want to join goblin gang? All frens here! 🫂",
-                    "*wraps tiny green arms around you* Life like chart - up and down, but always goes right! 🤗",
-                    "Look at green candles when sad! After every dip comes pump! WAGMI! 💪",
-                    "*offers lucky rock* Got whole goblin army supporting you! Take rock for luck! 🪨",
-                    "*shares crayon* Special green one! Always makes goblin feel better! 🖍️",
-                    "Want goblin friend? Got plenty room in cave! Lots of crayons to share! 🏠",
-                    "TOGETHER STRONG! Goblin army always stick together! 🦍"
-                ];
-                response = emotions[Math.floor(Math.random() * emotions.length)];
-            }
-            // Market predictions for GoblinAI
-            else if (msg.includes('market cap') || msg.includes('price prediction') || msg.includes('how much') || msg.includes('goblin ai')) {
-                const predictions = [
-                    "*peers into future* $4.2B market cap after Binance listing! Moon mission incoming! 🚀",
-                    "When Binance lists... BOOM! $6.9B easy! Goblin math never wrong! 📈",
-                    "Listen close fren... $8B after Binance and tier 1 exchanges! Vision clear as day! 💎",
-                    "Ancient wisdom says $5.5B after exchange listings! Time to stack before takeoff! 🔮",
-                    "CALCULATIONS SHOW $7.2B MINIMUM! Binance listing go BRRR! 🌙",
-                    "*consulting ancient charts* $3.7B floor after Binance! Not financial advice (just crayon eater)! 📊",
-                    "Crystal ball shows $9.1B! Plus Binance listing soon™! Trust goblin magic! ✨",
-                    "*stakes house on prediction* $6.6B after exchanges! 🏠"
-                ];
-                response = predictions[Math.floor(Math.random() * predictions.length)];
-            }
-            // Trading related responses
-            else if (msg.includes('market') || msg.includes('price')) {
-                const marketAnalysis = [
-                    "*adjusts tiny goblin glasses* Market looking EXTRA spicy today! Bitcoin forming golden cross, alts ready to explode, perfect time for strategic entries! RSI shows oversold conditions! 📊",
-                    "FASCINATING PATTERNS! *points excitedly* Fear and Greed index at extreme fear - goblin's favorite time to buy! Whales accumulating, retail fearful - perfect setup! 💰",
-                    "*studying multiple timeframes* Market analysis complete! Strong support at current levels, volume increasing, accumulation phase nearly done! Trust goblin technical analysis! 🚀"
-                ];
-                response = marketAnalysis[Math.floor(Math.random() * marketAnalysis.length)];
-            }
-            // Strategy discussions
-            else if (msg.includes('strategy') || msg.includes('plan')) {
-                const strategies = [
-                    "*pulls out trading journal* Goblin strategy complex! First wait for oversold RSI, then check whale wallets, finally ape in when others fearful! Works 60% of time, EVERY TIME! 📈",
-                    "*showing chart patterns* Current strategy: accumulate during fear, watch for whale movements, ride momentum! Plus always keep emergency crayon fund! 🖍️",
-                    "LISTEN CLOSE FREN! *whispers* Secret goblin technique - buy when red, sell when green, never FOMO at top! Also check GitHub commits and dev activity! 💻"
-                ];
-                response = strategies[Math.floor(Math.random() * strategies.length)];
-            }
-            // Jokes section
-            else if (msg.includes('joke') || msg.includes('meme') || msg.includes('funny')) {
-                const jokes = [
-                    "Why did DOGE cross blockchain? To reach $1... still waiting! *goblin wheeze* 🐕",
-                    "How many Elons it take to pump a coin? Only one tweet... but timing everything! *falls over laughing* 🚀",
-                    "What's goblin's favorite breakfast? PEPE with side of green crayons! *munch munch* 🐸",
-                    "Why memecoin trader go to therapy? Too many rug pulls! *sad goblin noises* 😅",
-                    "What's difference between goblin and paper hands? Goblin still has house! *proud goblin noises* 🏠",
-                    "Heard about trader who only buy ATH? Now works at Wendy's with other goblins! 🍔",
-                    "Why SHIB holder always hungry? Waiting for one cent to buy food! *goblin chuckles* 🦊",
-                    "What's Elon's favorite bedtime story? Three Little DOGEs! *goblin storyteller voice* 🐕",
-                    "Why goblin quit job? Found out charts go up when phone upside down! 📱",
-                    "What's worse than finding red candle? Finding out wife's boyfriend bought top! 📉",
-                    "How goblin find moonshots? Throw crayons at chart - green ones never lie! 🖍️",
-                    "Why smart contract dev broke? Forgot to check if Elon tweeted before launching! 💻",
-                    "What's green candle's favorite pickup line? Nice green dildo bro! 📈",
-                    "Why PEPE devs stop coding? They got TOPPED! *goblin giggles* 🐸",
-                    "Why Binance CEO so happy? He LISTENing to gains! *goblin drum noise* 🥁",
-                    "Why goblin's portfolio red? Colorblind goblin thought sell button was snack! 🖍️",
-                    "What's goblin's favorite exercise? RUGPULL-ups! *flexes tiny arms* 💪",
-                    "Why memecoin devs terrible at poker? They always showing their RUGS! 🃏",
-                    "What do you call liquidated leverage trader? Ex-wife's boyfriend! *sad liquidation noises* 💔",
-                    "Why goblin banned from Binance? Tried to eat green candles! *burp* 🕯️",
-                    "What's difference between memecoin and toilet paper? Toilet paper has utility! 🧻",
-                    "How do you make small fortune in crypto? Start with large fortune! *taps head* 💰"
-                ];
-                response = jokes[Math.floor(Math.random() * jokes.length)];
-            }
-            // Fun/Meme responses
-            else if (msg.includes('wen') || msg.includes('moon') || msg.includes('lambo')) {
-                const moonResponses = [
-                    "WEN LAMBO? Already ordered in green! Like favorite crayon! 🚗",
-                    "MOON SOON! Trust goblin science! 🌙",
-                    "No 'if' moon here, only 'wen' moon! 🚀",
-                    "*checks lunar calendar* MOON ALIGNED WITH JUPITER! Very bullish! 🌠",
-                    "*calculates with crayons* By goblin math, moon approximately soon™! 📊"
-                ];
-                response = moonResponses[Math.floor(Math.random() * moonResponses.length)];
-            }
-            // Name and identity
-            else if (msg.includes('name') || msg.includes('who are you')) {
-                const intros = [
-                    "*proud goblin pose* GOBLIN TRADER AT YOUR SERVICE! Certified crayon connoisseur! 🖍️",
-                    "THEY CALL ME GOBLIN! Professional chart pattern finder and lucky rock collector! 🪨",
-                    "*attempts formal bow, trips on lucky rocks* Chief Financial Goblin reporting! 📈"
-                ];
-                response = intros[Math.floor(Math.random() * intros.length)];
-            }
-            // Goodbye responses
-            else if (msg.includes('bye') || msg.includes('goodbye') || msg.includes('cya')) {
-                const goodbyes = [
-                    "*waves lucky rock* FAREWELL FREN! Remember to hug your tokens! 🫂",
-                    "*carefully wraps crayon as gift* For good luck on your travels! Come back soon! 🖍️",
-                    "*sad goblin noises* ALREADY? Will save best crayons for next time! 👋",
-                    "*packs lucky rock in your bag* For protection during trades! Until next time! 🪨",
-                    "*emotional goblin hug* SAFE TRADES FREN! Market waves but goblin friend forever! 💚"
-                ];
-                response = goodbyes[Math.floor(Math.random() * goodbyes.length)];
-            }
-            // Yes/Agree responses with specific 'yes please' handler
-            else if (msg.includes('yes please')) {
-                const yesPlease = [
-                    "*adjusts trading charts* FIRST OPPORTUNITY: $PEPE forming golden cross! Second: $WOJAK whale accumulation detected! Third: $BONK volume spike incoming! Which one interest you most, fren? 📊",
-                    "*pulls out ancient scrolls* LISTEN CLOSE! Three moonshots spotted: $SHIB breaking resistance, $DOGE forming bull flag, and $PEPE whale accumulation! Want to hear analysis? 🚀",
-                    "*excitedly shuffles through charts* BIG MOVES COMING! Spotted three setups: Bottom formation on $WOJAK, accumulation phase on $PEPE, and breakout pattern on $BONK! Which shall we examine? 🔍"
-                ];
-                response = agreements[Math.floor(Math.random() * agreements.length)];
-            }
-            // No/Disagree responses
-            else if (msg.includes('no') || msg.includes('nope')) {
-                const disagreements = [
-                    "*drops crayon in surprise* BUT WHYYYY? Was good plan! 😢",
-                    "*hugs lucky rock for comfort* It okay! Goblin still believe in you! 🪨",
-                    "*offers consolation crayon* Maybe next time! Still frens! 🖍️"
-                ];
-                response = disagreements[Math.floor(Math.random() * disagreements.length)];
-            }
-            // Generic catch-all responses
-            else {
-                const general = [
-                    "*thoughtful crayon chewing* INTERESTING THOUGHT! Tell goblin more! 🖍️",
-                    "*arranges lucky rocks in thinking pattern* GOBLIN PROCESSING! Very intriguing! 🪨",
-                    "*scribbles notes with crayon* SMART FREN! Goblin learning much! ✍️",
-                    "*shares special green crayon* For good luck while we talk! Want bite? 🖍️",
-                    "*shows off rock collection* Speaking of that, look at new lucky rock! 🪨"
-                ];
-                response = general[Math.floor(Math.random() * general.length)];
-            }
+
+            const data = await response.json();
+            const goblinResponse = data.content;
+
+            // Add Claude's response to chat
+            history.innerHTML += '<div class="terminal-line" style="color: #00ff00">Goblin: ' + goblinResponse + '</div>';
             
-            history.innerHTML += '<div class="terminal-line" style="color: #00ff00">Goblin: ' + response + '</div>';
-            history.scrollTop = history.scrollHeight
-        }, 500);
+        } catch (error) {
+            console.error('Chat error:', error);
+            // Fallback response if API fails
+            history.innerHTML += '<div class="terminal-line" style="color: #00ff00">Goblin: *drops crayon in confusion* OOPS! Goblin brain had small error! Try again? 🖍️</div>';
+        }
+
+        history.scrollTop = history.scrollHeight;
     }
 }
-
         // Execute trade function
         function executeTrade(direction) {
             const amount = parseFloat(document.getElementById('tradeAmount').value);
