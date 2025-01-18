@@ -1,5 +1,4 @@
-// /api/chat.js
-import { Anthropic } from '@anthropic-ai/sdk';
+import Anthropic from '@anthropic-ai/sdk';
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
@@ -20,21 +19,25 @@ export default async function handler(req, res) {
         const completion = await anthropic.messages.create({
             model: "claude-3-sonnet-20240229",
             max_tokens: 1024,
-            temperature: 0.9,
+            temperature: 0.7,
             system: systemPrompt,
             messages: [
-                { role: "user", content: message }
+                {
+                    role: "user",
+                    content: message
+                }
             ]
         });
 
-        return res.status(200).json({
+        const response = {
             content: [{
                 text: completion.content[0].text
             }]
-        });
+        };
 
+        res.status(200).json(response);
     } catch (error) {
-        console.error('Chat API Error:', error);
-        return res.status(500).json({ error: 'Internal Server Error' });
+        console.error('API Error:', error);
+        res.status(500).json({ error: 'Failed to process request', details: error.message });
     }
 }
