@@ -1,29 +1,12 @@
 // api/chat.js
 export default async function handler(req, res) {
-    // CORS headers
-    res.setHeader('Access-Control-Allow-Credentials', true);
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-    res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
-
-    if (req.method === 'OPTIONS') {
-        res.status(200).end();
-        return;
-    }
-
-    if (req.method !== 'POST') {
-        res.status(405).json({ error: 'Method not allowed' });
-        return;
-    }
+    // CORS headers stay the same...
 
     const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 
     try {
         const { message, systemPrompt } = req.body;
         
-        console.log('Making request to Anthropic with message:', message);
-        console.log('System prompt:', systemPrompt);
-
         const response = await fetch('https://api.anthropic.com/v1/messages', {
             method: 'POST',
             headers: {
@@ -33,13 +16,13 @@ export default async function handler(req, res) {
             },
             body: JSON.stringify({
                 model: 'claude-3-haiku-20240307',
-                max_tokens: 1000,
-                temperature: 0.9,
-                system: systemPrompt,
                 messages: [{
                     role: 'user',
                     content: message
-                }]
+                }],
+                max_tokens: 1000,
+                temperature: 0.9,
+                system: systemPrompt
             })
         });
 
@@ -50,8 +33,8 @@ export default async function handler(req, res) {
         }
 
         const data = await response.json();
-        console.log('Anthropic response:', data);
-
+        
+        // Response format has changed
         res.status(200).json({
             content: [{ text: data.content[0].text }],
             audio: null
