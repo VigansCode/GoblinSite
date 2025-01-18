@@ -972,11 +972,10 @@ setInterval(updateTickerUI, 300000); // Update every 5 minutes
             }
 
             const data = await response.json();
-            // Handle the response format correctly
-            const goblinResponse = data.content[0]?.text || data.content;
+const goblinResponse = data.content[0] ? data.content[0].text : data.content;
 
-            // Add Claude's response to chat
-            history.innerHTML += '<div class="terminal-line" style="color: #00ff00">Goblin: ' + goblinResponse + '</div>';
+// Add Claude's response to chat
+history.innerHTML += '<div class="terminal-line" style="color: #00ff00">Goblin: ' + goblinResponse + '</div>';
             
         } catch (error) {
             console.error('Chat error:', error);
