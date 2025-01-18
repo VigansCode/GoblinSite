@@ -16,7 +16,7 @@ export default async function handler(req, res) {
         return;
     }
 
-    const ANTHROPIC_API_KEY = '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';
+    const ANTHROPIC_API_KEY = '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';
 
     try {
         const { message } = req.body;
