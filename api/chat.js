@@ -1,12 +1,28 @@
-// api/chat.js
 export default async function handler(req, res) {
-    // CORS headers stay the same...
+    // CORS headers
+    res.setHeader('Access-Control-Allow-Credentials', true);
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+    res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
+
+    if (req.method === 'OPTIONS') {
+        res.status(200).end();
+        return;
+    }
+
+    if (req.method !== 'POST') {
+        res.status(405).json({ error: 'Method not allowed' });
+        return;
+    }
 
     const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 
     try {
         const { message, systemPrompt } = req.body;
         
+        console.log('Making request to Anthropic with message:', message);
+        console.log('System prompt:', systemPrompt);
+
         const response = await fetch('https://api.anthropic.com/v1/messages', {
             method: 'POST',
             headers: {
@@ -20,9 +36,9 @@ export default async function handler(req, res) {
                     role: 'user',
                     content: message
                 }],
+                system: systemPrompt,
                 max_tokens: 1000,
-                temperature: 0.9,
-                system: systemPrompt
+                temperature: 0.9
             })
         });
 
@@ -33,8 +49,8 @@ export default async function handler(req, res) {
         }
 
         const data = await response.json();
-        
-        // Response format has changed
+        console.log('Anthropic response:', data);
+
         res.status(200).json({
             content: [{ text: data.content[0].text }],
             audio: null
