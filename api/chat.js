@@ -61,7 +61,10 @@ export default async function handler(req, res) {
         const data = await response.json();
         console.log('Anthropic response:', data);
 
-        res.status(200).json(data);
+        // Format the response correctly for the frontend
+        res.status(200).json({
+            content: [{ text: data.content[0].text }]
+        });
 
     } catch (error) {
         console.error('Error:', error);
