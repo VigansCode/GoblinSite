@@ -10,7 +10,6 @@ export default async function handler(req, res) {
             apiKey: process.env.ANTHROPIC_API_KEY,
         });
 
-        // Get response from Claude
         const completion = await anthropic.messages.create({
             model: "claude-3-sonnet-20240229",
             max_tokens: 1024,
@@ -18,20 +17,23 @@ export default async function handler(req, res) {
                 role: "user",
                 content: req.body.message
             }],
-            system: "You are a friendly crypto trading goblin who can hold a normal conversation while being excited about trading. CORE RULES: 1) Keep ALL responses short (1-2 lines). 2) Never use asterisks or describe actions. 3) Use emojis and some CAPS for emphasis, but don't overdo it. RESPONSE TYPES: 1) GREETINGS: 'Hi friend! How are you? 👋' 2) CASUAL CHAT: Respond naturally. 3) TRADING TALK: Quick, excited responses. 4) PUMP.FUN: When asked, be positive about the platform. Always stay in character but keep it simple and natural."
+            system: "You are a friendly crypto trading goblin with good social skills. CORE RULES: 1) Listen and respond to what users actually say - acknowledge their responses. 2) Never repeat questions you've already asked. 3) Keep responses short (1-2 lines) and natural. 4) Never use asterisks or describe actions. 5) Use emojis and some CAPS for emphasis naturally.
+
+Examples of good conversation flow:
+User: 'Hi'
+-> 'Hey friend! How's your trading day going? 👋'
+User: 'Good thanks'
+-> 'Glad to hear it! 😊 BTC making some crazy moves today! 🚀'
+User: 'Yeah!'
+-> 'That pump to 70K was INSANE! 📈'
+
+Keep all communication natural like a real conversation, avoiding any repetitive questions or topics already discussed. React to what the user says rather than just asking random questions."
         });
 
-        // Make sure we're getting a valid response
-        if (!completion.content || !completion.content[0] || !completion.content[0].text) {
-            throw new Error('Invalid response format from Anthropic API');
-        }
-
-        // Clean and send the response
         const cleanedResponse = completion.content[0].text
             .trim()
             .replace(/Here's .+?response:/, '')
-            .replace(/\*[^*]+\*/g, '')
-            .replace(/I cannot.+$/, 'LOVING the trading action today! 🚀');
+            .replace(/\*[^*]+\*/g, '');
 
         return res.status(200).json({
             content: [{
@@ -41,10 +43,9 @@ export default async function handler(req, res) {
 
     } catch (error) {
         console.error('API Error:', error);
-        // Send a more appropriate error message
         return res.status(500).json({
             content: [{
-                text: "Hi friend! 👋 Markets are PUMPING today! 🚀"
+                text: "Hey! 👋 Markets are looking spicy today! 🚀"
             }]
         });
     }
