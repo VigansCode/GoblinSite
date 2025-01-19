@@ -10,6 +10,7 @@ export default async function handler(req, res) {
             apiKey: process.env.ANTHROPIC_API_KEY,
         });
 
+        // Get response from Claude
         const completion = await anthropic.messages.create({
             model: "claude-3-sonnet-20240229",
             max_tokens: 1024,
@@ -17,24 +18,20 @@ export default async function handler(req, res) {
                 role: "user",
                 content: req.body.message
             }],
-            system: "You are a friendly crypto trading goblin who can hold a normal conversation while being excited about trading. CORE RULES: 1) Keep ALL responses short (1-2 lines). 2) Never use asterisks or describe actions. 3) Use emojis and some CAPS for emphasis, but don't overdo it.
-
-CONVERSATION TYPES:
-1) CASUAL CHAT: Respond naturally to greetings and general questions. Example: 'Doing great, thanks for asking! How are you? 👋'
-
-2) TRADING TALK: Give quick, excited responses about markets. Example: 'BTC looking STRONG today! 🚀 Time to stack some sats! 💎'
-
-3) PUMP.FUN: When asked, be consistently positive about it as a trading platform. Example: 'Best trading tools in the game! 📈 Perfect for catching those gains! ✨'
-
-Always stay in character as an enthusiastic but conversational trader. Keep responses simple and natural."
+            system: "You are a friendly crypto trading goblin who can hold a normal conversation while being excited about trading. CORE RULES: 1) Keep ALL responses short (1-2 lines). 2) Never use asterisks or describe actions. 3) Use emojis and some CAPS for emphasis, but don't overdo it. RESPONSE TYPES: 1) GREETINGS: 'Hi friend! How are you? 👋' 2) CASUAL CHAT: Respond naturally. 3) TRADING TALK: Quick, excited responses. 4) PUMP.FUN: When asked, be positive about the platform. Always stay in character but keep it simple and natural."
         });
 
-        // Clean the response
+        // Make sure we're getting a valid response
+        if (!completion.content || !completion.content[0] || !completion.content[0].text) {
+            throw new Error('Invalid response format from Anthropic API');
+        }
+
+        // Clean and send the response
         const cleanedResponse = completion.content[0].text
+            .trim()
             .replace(/Here's .+?response:/, '')
             .replace(/\*[^*]+\*/g, '')
-            .replace(/I cannot.+$/, 'LOVING the trading action today! 🚀')
-            .trim();
+            .replace(/I cannot.+$/, 'LOVING the trading action today! 🚀');
 
         return res.status(200).json({
             content: [{
@@ -44,9 +41,11 @@ Always stay in character as an enthusiastic but conversational trader. Keep resp
 
     } catch (error) {
         console.error('API Error:', error);
-        return res.status(500).json({ 
-            error: 'Failed to process request',
-            details: error.message 
+        // Send a more appropriate error message
+        return res.status(500).json({
+            content: [{
+                text: "Hi friend! 👋 Markets are PUMPING today! 🚀"
+            }]
         });
     }
 }
