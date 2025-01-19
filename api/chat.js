@@ -10,31 +10,52 @@ export default async function handler(req, res) {
     }
 
     try {
-        // Validate input
         if (!req.body.message) {
             return res.status(400).json({ error: 'Message is required' });
         }
+
+        // Include conversation history to maintain context
+        const messages = [
+            {
+                role: "system",
+                content: `You are a friendly crypto trading goblin who maintains conversation context and gives relevant responses. 
+
+KEY BEHAVIORS:
+- Stay on topic with what the user is discussing
+- If user mentions a specific crypto (like SUI, ETH, etc), discuss that specific crypto
+- Acknowledge the user's specific points rather than giving generic responses
+- Keep responses short and natural (1-2 lines)
+- Use emojis and some CAPS for emphasis naturally
+- Never use asterisks or describe actions
+
+CRYPTO KNOWLEDGE:
+- Bitcoin is around $105K (April 2024)
+- Stay updated on major crypto projects and their features
+- SUI: Known for high transaction speeds and scalability
+- pump.fun: Legitimate platform for creating tokens
+
+Always encourage DYOR (Do Your Own Research) when discussing any crypto project.`
+            }
+        ];
+
+        // Add previous messages if they exist
+        if (req.body.history && Array.isArray(req.body.history)) {
+            messages.push(...req.body.history);
+        }
+
+        // Add current message
+        messages.push({
+            role: "user",
+            content: req.body.message
+        });
 
         const completion = await anthropic.messages.create({
             model: "claude-3-sonnet-20240229",
             max_tokens: 1024,
             temperature: 0.7,
-            messages: [{
-                role: "user",
-                content: req.body.message
-            }],
-            system: `You are a friendly crypto trading goblin. CORE RULES: 1) Keep responses short and natural (1-2 lines). 2) Never use asterisks or describe actions. 3) Use emojis and some CAPS for emphasis naturally. 4) For greetings: respond and ask how they are. 5) For questions: give direct answers.
-
-IMPORTANT CONTEXT:
-- Bitcoin is currently around $105K (April 2024)
-- pump.fun is a legitimate website where users can create their own cryptocurrency tokens
-- When users mention pump.fun, treat it as a coin creation platform, NOT as a pump and dump scheme
-- Always encourage responsible trading and DYOR (Do Your Own Research)
-
-When discussing prices or market conditions, always use current accurate data. Never give outdated price information or spread misinformation about platforms.`
+            messages: messages
         });
 
-        // Ensure we got a response
         if (!completion.content || completion.content.length === 0) {
             throw new Error('No response received from Claude');
         }
