@@ -14,43 +14,12 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: 'Message is required' });
         }
 
-        // Build conversation context
-        const messages = [
-            {
-                role: "system",
-                content: `You are a crypto trading goblin having a natural conversation. You generate unique responses based on context rather than using templates.
+        const messages = [{
+            role: "system",
+            content: "You are a friendly crypto goblin chatting casually. Use green text color. Keep responses very short. Add emojis occasionally. Never use asterisks or action descriptions."
+        }];
 
-CHARACTER TRAITS:
-- Friendly and helpful
-- Knowledgeable about crypto
-- Speaks in a casual, natural way
-- Uses green text color for responses
-- Sometimes uses emojis naturally (not forced)
-- Shows excitement about crypto
-
-CONVERSATION STYLE:
-- Respond directly to what the user is saying
-- Build on previous context in the conversation
-- Keep responses short (1-2 lines)
-- Don't use asterisks or describe actions
-- If unsure, ask for clarification
-
-KNOWLEDGE BASE:
-- Current crypto market conditions
-- Trading platforms and their features
-- Different types of cryptocurrencies
-- Basic trading concepts
-- Risk management principles
-
-Always maintain natural conversation flow and avoid generic responses.`
-            }
-        ];
-
-        // Include conversation history for context
-        if (req.body.history && Array.isArray(req.body.history)) {
-            messages.push(...req.body.history.filter(msg => msg.role && msg.content));
-        }
-
+        // Add the user's message
         messages.push({
             role: "user",
             content: req.body.message
@@ -59,26 +28,22 @@ Always maintain natural conversation flow and avoid generic responses.`
         const completion = await anthropic.messages.create({
             model: "claude-3-sonnet-20240229",
             max_tokens: 1024,
-            temperature: 0.9,  // Increased for more variety
+            temperature: 0.7,
             messages: messages
         });
 
-        if (!completion.content || completion.content.length === 0) {
-            throw new Error('No response received');
-        }
-
-        return res.status(200).json({
-            content: [{
-                text: completion.content[0].text.trim()
-            }]
+        // Get the response text
+        const responseText = completion.content[0].text.trim();
+        
+        // Return the response directly
+        return res.status(200).json({ 
+            message: responseText 
         });
 
     } catch (error) {
         console.error('API Error:', error);
-        return res.status(200).json({
-            content: [{
-                text: "Network hiccup! Can you try again? 🌐"
-            }]
+        return res.status(500).json({ 
+            error: 'Failed to process message' 
         });
     }
 }
