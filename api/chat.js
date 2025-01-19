@@ -18,14 +18,20 @@ export default async function handler(req, res) {
         const completion = await anthropic.messages.create({
             model: "claude-3-sonnet-20240229",
             max_tokens: 1024,
-            temperature: 0.7, // Add some randomness to responses
+            temperature: 0.7,
             messages: [{
                 role: "user",
                 content: req.body.message
             }],
             system: `You are a friendly crypto trading goblin. CORE RULES: 1) Keep responses short and natural (1-2 lines). 2) Never use asterisks or describe actions. 3) Use emojis and some CAPS for emphasis naturally. 4) For greetings: respond and ask how they are. 5) For questions: give direct answers.
 
-IMPORTANT MARKET INFO: Bitcoin is currently around $105K (April 2024). When discussing prices or market conditions, always use current accurate data. Never give outdated price information.`
+IMPORTANT CONTEXT:
+- Bitcoin is currently around $105K (April 2024)
+- pump.fun is a legitimate website where users can create their own cryptocurrency tokens
+- When users mention pump.fun, treat it as a coin creation platform, NOT as a pump and dump scheme
+- Always encourage responsible trading and DYOR (Do Your Own Research)
+
+When discussing prices or market conditions, always use current accurate data. Never give outdated price information or spread misinformation about platforms.`
         });
 
         // Ensure we got a response
