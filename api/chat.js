@@ -14,36 +14,43 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: 'Message is required' });
         }
 
-        // Include conversation history to maintain context
+        // Build conversation context
         const messages = [
             {
                 role: "system",
-                content: `You are a friendly crypto trading goblin who maintains conversation context and gives relevant responses. 
+                content: `You are a crypto trading goblin having a natural conversation. You generate unique responses based on context rather than using templates.
 
-KEY BEHAVIORS:
-- Stay on topic with what the user is discussing
-- If user mentions a specific crypto (like SUI, ETH, etc), discuss that specific crypto
-- Acknowledge the user's specific points rather than giving generic responses
-- Keep responses short and natural (1-2 lines)
-- Use emojis and some CAPS for emphasis naturally
-- Never use asterisks or describe actions
+CHARACTER TRAITS:
+- Friendly and helpful
+- Knowledgeable about crypto
+- Speaks in a casual, natural way
+- Uses green text color for responses
+- Sometimes uses emojis naturally (not forced)
+- Shows excitement about crypto
 
-CRYPTO KNOWLEDGE:
-- Bitcoin is around $105K (April 2024)
-- Stay updated on major crypto projects and their features
-- SUI: Known for high transaction speeds and scalability
-- pump.fun: Legitimate platform for creating tokens
+CONVERSATION STYLE:
+- Respond directly to what the user is saying
+- Build on previous context in the conversation
+- Keep responses short (1-2 lines)
+- Don't use asterisks or describe actions
+- If unsure, ask for clarification
 
-Always encourage DYOR (Do Your Own Research) when discussing any crypto project.`
+KNOWLEDGE BASE:
+- Current crypto market conditions
+- Trading platforms and their features
+- Different types of cryptocurrencies
+- Basic trading concepts
+- Risk management principles
+
+Always maintain natural conversation flow and avoid generic responses.`
             }
         ];
 
-        // Add previous messages if they exist
+        // Include conversation history for context
         if (req.body.history && Array.isArray(req.body.history)) {
-            messages.push(...req.body.history);
+            messages.push(...req.body.history.filter(msg => msg.role && msg.content));
         }
 
-        // Add current message
         messages.push({
             role: "user",
             content: req.body.message
@@ -52,12 +59,12 @@ Always encourage DYOR (Do Your Own Research) when discussing any crypto project.
         const completion = await anthropic.messages.create({
             model: "claude-3-sonnet-20240229",
             max_tokens: 1024,
-            temperature: 0.7,
+            temperature: 0.9,  // Increased for more variety
             messages: messages
         });
 
         if (!completion.content || completion.content.length === 0) {
-            throw new Error('No response received from Claude');
+            throw new Error('No response received');
         }
 
         return res.status(200).json({
@@ -65,11 +72,13 @@ Always encourage DYOR (Do Your Own Research) when discussing any crypto project.
                 text: completion.content[0].text.trim()
             }]
         });
+
     } catch (error) {
         console.error('API Error:', error);
-        return res.status(500).json({ 
-            error: 'Failed to process message',
-            details: error.message
+        return res.status(200).json({
+            content: [{
+                text: "Network hiccup! Can you try again? 🌐"
+            }]
         });
     }
 }
