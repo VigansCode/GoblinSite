@@ -1372,20 +1372,6 @@ function sendLiveMessage() {
     }
 }
 
-// ADD THIS RIGHT HERE
-document.getElementById('live-chat-input').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter' && !isTyping) {
-        sendLiveMessage();
-    }
-});
-
-const sendLiveBtn = document.querySelector('button[onclick="sendLiveMessage()"]');
-sendLiveBtn.addEventListener('click', () => {
-    if (!isTyping) {
-        sendLiveMessage();
-    }
-});
-
 // Add event listener for live chat input
 document.addEventListener('DOMContentLoaded', () => {
     const liveChatInput = document.getElementById('live-chat-input');
