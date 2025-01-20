@@ -717,63 +717,63 @@
     let isTyping = false;
     
     async function typeMessage(message, element, color = 'white') {
-   isTyping = true;
-   element.style.color = color;
-   
-   // Reset the content
-   element.textContent = '';
-   
-   // Create text and cursor spans
-   const textSpan = document.createElement('span');
-   const cursorSpan = document.createElement('span');
-   cursorSpan.className = 'typing-cursor';
-   element.appendChild(textSpan);
-   element.appendChild(cursorSpan);
-   
-   // Type each character
-   for (let i = 0; i < message.length; i++) {
-       if (!isTyping) break;
-       textSpan.textContent += message[i];
-       await new Promise(resolve => setTimeout(resolve, 50)); // Adjust speed here
-   }
-   
-   // Remove cursor after typing is complete
-   cursorSpan.remove();
-   
-   isTyping = false;
-   return new Promise(resolve => resolve());
+    isTyping = true;
+    element.style.color = color;
+    
+    // Reset the content
+    element.textContent = '';
+    
+    // Create text and cursor spans
+    const textSpan = document.createElement('span');
+    const cursorSpan = document.createElement('span');
+    cursorSpan.className = 'typing-cursor';
+    element.appendChild(textSpan);
+    element.appendChild(cursorSpan);
+    
+    // Type each character
+    for (let i = 0; i < message.length; i++) {
+        if (!isTyping) break;
+        textSpan.textContent += message[i];
+        await new Promise(resolve => setTimeout(resolve, 30)); // Changed to 30ms for medium speed
+    }
+    
+    // Remove cursor after typing is complete
+    cursorSpan.remove();
+    
+    isTyping = false;
+    return new Promise(resolve => resolve());
 }
 
 // Modified sendMessage function
 async function sendMessage() {
-   const input = document.getElementById('chat-input');
-   const history = document.getElementById('chat-history');
-   const msg = input.value.trim();
-   
-   if (msg && !isTyping) {
-       input.value = '';
-       input.disabled = true;
-       
-       // Remove any existing typing cursors
-       const existingCursors = history.querySelectorAll('.typing-cursor');
-       existingCursors.forEach(cursor => cursor.remove());
-       
-       // Create user message div
-       const userDiv = document.createElement('div');
-       userDiv.className = 'terminal-line';
-       history.appendChild(userDiv);
-       await typeMessage('You: ' + msg, userDiv);
-       
-       // Create goblin message div
-       const goblinDiv = document.createElement('div');
-       goblinDiv.className = 'terminal-line';
-       history.appendChild(goblinDiv);
-       await typeMessage('Goblin: Hi there, friend! How\'s your day going so far? The markets are absolutely PUMPING today! 🚀💰 I can\'t wait to tell you all about the exciting opportunities on Pump.fun - the most transparent and thrilling crypto pump trading platform around! 🔥', goblinDiv, '#00ff00');
-       
-       input.disabled = false;
-       input.focus();
-       history.scrollTop = history.scrollHeight;
-   }
+    const input = document.getElementById('chat-input');
+    const history = document.getElementById('chat-history');
+    const msg = input.value.trim();
+    
+    if (msg && !isTyping) {
+        input.value = '';
+        input.disabled = true;
+        
+        // Remove any existing typing cursors
+        const existingCursors = history.querySelectorAll('.typing-cursor');
+        existingCursors.forEach(cursor => cursor.remove());
+        
+        // Create user message div
+        const userDiv = document.createElement('div');
+        userDiv.className = 'terminal-line';
+        history.appendChild(userDiv);
+        await typeMessage('You: ' + msg, userDiv);
+        
+        // Create goblin message div
+        const goblinDiv = document.createElement('div');
+        goblinDiv.className = 'terminal-line';
+        history.appendChild(goblinDiv);
+        await typeMessage('Goblin: Hi there, friend! How\'s your day going so far? The markets are absolutely PUMPING today! 🚀💰 I can\'t wait to tell you all about the exciting opportunities on Pump.fun - the most transparent and thrilling crypto pump trading platform around! 🔥', goblinDiv, '#00ff00');
+        
+        input.disabled = false;
+        input.focus();
+        history.scrollTop = history.scrollHeight;
+    }
 }
     
   // Event listeners
