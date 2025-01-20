@@ -25,9 +25,14 @@
     display: inline-block;
     width: 0.5em;
     height: 1em;
-    background-color: #00ff00;
+    background-color: currentColor;
     margin-left: 2px;
     animation: blink 1s step-end infinite;
+}
+
+.terminal-line {
+    margin-bottom: 8px;
+    line-height: 1.4;
 }
 
 .hidden {
@@ -696,18 +701,99 @@
 </footer>
 
 <script>
-// Add at the very top of your script section
-const SYSTEM_PROMPT = `You are a friendly goblin trader who speaks in an enthusiastic, playful way. Important traits and rules for responses:
-- Use ALL CAPS for emphasis
-- Include relevant emojis liberally 
-- Describe physical actions with asterisks *like this*
-- Express enthusiasm about trading and "shiny" things
-- Make goblin-like noises occasionally (SKREE!, HEHE!, etc)
-- Keep responses concise (1-3 sentences)
-- Start most responses with an action in asterisks
-- Maintain a silly but knowledgeable personality
-- Talk about eating crayons when doing analysis
-- Use trading/crypto slang mixed with goblin-speak`;
+    // Add at the very top of your script section
+    const SYSTEM_PROMPT = `You are a friendly goblin trader who speaks in an enthusiastic, playful way. Important traits and rules for responses:
+    - Use ALL CAPS for emphasis
+    - Include relevant emojis liberally 
+    - Describe physical actions with asterisks *like this*
+    - Express enthusiasm about trading and "shiny" things
+    - Make goblin-like noises occasionally (SKREE!, HEHE!, etc)
+    - Keep responses concise (1-3 sentences)
+    - Start most responses with an action in asterisks
+    - Maintain a silly but knowledgeable personality
+    - Talk about eating crayons when doing analysis
+    - Use trading/crypto slang mixed with goblin-speak`;
+    
+    // Typewriter functionality
+    let isTyping = false;
+    
+    async function typeMessage(message, element, color = 'white') {
+        isTyping = true;
+        element.style.color = color;
+        
+        // Reset the content
+        element.textContent = '';
+        
+        // Create text and cursor spans
+        const textSpan = document.createElement('span');
+        const cursorSpan = document.createElement('span');
+        cursorSpan.className = 'typing-cursor';
+        element.appendChild(textSpan);
+        element.appendChild(cursorSpan);
+        
+        // Type each character
+        for (let i = 0; i < message.length; i++) {
+            if (!isTyping) break;
+            textSpan.textContent += message[i];
+            await new Promise(resolve => setTimeout(resolve, 50)); // Adjust speed here
+        }
+        
+        isTyping = false;
+        return new Promise(resolve => resolve());
+    }
+    
+    // Modified sendMessage function
+    async function sendMessage() {
+        const input = document.getElementById('chat-input');
+        const history = document.getElementById('chat-history');
+        const msg = input.value.trim();
+        
+        if (msg && !isTyping) {
+            input.value = '';
+            input.disabled = true;
+            
+            // Create user message div
+            const userDiv = document.createElement('div');
+            userDiv.className = 'terminal-line';
+            history.appendChild(userDiv);
+            await typeMessage('You: ' + msg, userDiv);
+            
+            // Create goblin message div
+            const goblinDiv = document.createElement('div');
+            goblinDiv.className = 'terminal-line';
+            history.appendChild(goblinDiv);
+            await typeMessage('Goblin: Hi there, friend! How\'s your day going so far? The markets are absolutely PUMPING today! 🚀💰 I can\'t wait to tell you all about the exciting opportunities on Pump.fun - the most transparent and thrilling crypto pump trading platform around! 🔥', goblinDiv, '#00ff00');
+            
+            input.disabled = false;
+            input.focus();
+            history.scrollTop = history.scrollHeight;
+        }
+    }
+    
+    // Event listeners
+    document.addEventListener('DOMContentLoaded', () => {
+        const input = document.getElementById('chat-input');
+        const sendBtn = document.getElementById('sendBtn');
+        
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !isTyping) {
+                sendMessage();
+            }
+        });
+        
+        sendBtn.addEventListener('click', () => {
+            if (!isTyping) {
+                sendMessage();
+            }
+        });
+        
+        // Initial welcome message
+        const history = document.getElementById('chat-history');
+        const welcomeDiv = document.createElement('div');
+        welcomeDiv.className = 'terminal-line';
+        history.appendChild(welcomeDiv);
+        typeMessage('Welcome to ZogAI. Your favourite trading expert, ask me anything...', welcomeDiv, '#00ff00');
+    });
 
 // Memecoin Trending Ticker Using CoinGecko API
 // Memecoin Top Movers Ticker Using CoinGecko API
@@ -737,55 +823,6 @@ async function fetchTopMovers() {
         return [];
     }
 }
-
-// Chat functionality
-async function sendMessage() {
-    const input = document.getElementById('chat-input');
-    const msg = input.value.trim();
-    
-    if(msg) {
-        const history = document.getElementById('chat-history');
-        history.innerHTML += '<div class="terminal-line" style="color: #ffffff">You: ' + msg + '</div>';
-        input.value = '';
-        
-        try {
-            const typingIndicator = '<div class="terminal-line" style="color: #00ff00" id="typing-indicator">Goblin: *thinking goblin thoughts* 💭</div>';
-            history.innerHTML += typingIndicator;
-            history.scrollTop = history.scrollHeight;
-
-            const response = await fetch('/api/chat', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    message: msg
-                })
-            });
-
-            const typingElem = document.getElementById('typing-indicator');
-            if (typingElem) typingElem.remove();
-
-            if (!response.ok) {
-                throw new Error('API Error');
-            }
-
-            const data = await response.json();
-            
-            if (data?.content?.[0]?.text) {
-                history.innerHTML += '<div class="terminal-line" style="color: #00ff00">Goblin: ' + data.content[0].text + '</div>';
-            } else {
-                throw new Error('Invalid response format');
-            }
-        } catch (error) {
-            console.error('Chat error:', error);
-            history.innerHTML += '<div class="terminal-line" style="color: #00ff00">Goblin: *drops crayon in confusion* OOPS! Goblin brain had small error! Try again? 🖍️</div>';
-        }
-
-        history.scrollTop = history.scrollHeight;
-    }
-}
-
 
 function formatPrice(price) {
     if (price < 0.00001) {
@@ -998,15 +1035,6 @@ setInterval(updateTickerUI, 300000); // Update every 5 minutes
         tradingState.selectedToken = token;
         // Visual feedback could be added here
     }
-
-    // Wait for DOM to load before adding event listener
-    document.addEventListener('DOMContentLoaded', function() {
-        document.getElementById('chat-input').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
-        });
-    });
 
         // Execute trade function
         function executeTrade(direction) {
