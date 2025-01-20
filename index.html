@@ -769,30 +769,23 @@
         }
     }
     
-    // Event listeners
-    document.addEventListener('DOMContentLoaded', () => {
-        const input = document.getElementById('chat-input');
-        const sendBtn = document.getElementById('sendBtn');
-        
-        input.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && !isTyping) {
-                sendMessage();
-            }
-        });
-        
-        sendBtn.addEventListener('click', () => {
-            if (!isTyping) {
-                sendMessage();
-            }
-        });
-        
-        // Initial welcome message
-        const history = document.getElementById('chat-history');
-        const welcomeDiv = document.createElement('div');
-        welcomeDiv.className = 'terminal-line';
-        history.appendChild(welcomeDiv);
-        typeMessage('Welcome to ZogAI. Your favourite trading expert, ask me anything...', welcomeDiv, '#00ff00');
+  // Event listeners
+document.addEventListener('DOMContentLoaded', () => {
+    const input = document.getElementById('chat-input');
+    const sendBtn = document.getElementById('sendBtn');
+    
+    input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && !isTyping) {
+            sendMessage();
+        }
     });
+    
+    sendBtn.addEventListener('click', () => {
+        if (!isTyping) {
+            sendMessage();
+        }
+    });
+});
 
 // Memecoin Trending Ticker Using CoinGecko API
 // Memecoin Top Movers Ticker Using CoinGecko API
