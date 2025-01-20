@@ -1372,23 +1372,6 @@ function sendLiveMessage() {
     }
 }
 
-// Live Chat functionality
-function sendLiveMessage() {
-    const input = document.getElementById('live-chat-input');
-    const message = input.value.trim();
-    
-    if(message) {
-        const messageData = {
-            username: username,
-            message: message,
-            timestamp: new Date().toISOString()
-        };
-        
-        channel.publish('chat', messageData);
-        input.value = '';
-    }
-}
-
 // ADD THIS RIGHT HERE
 document.getElementById('live-chat-input').addEventListener('keypress', (e) => {
     if (e.key === 'Enter' && !isTyping) {
