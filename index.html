@@ -1458,14 +1458,20 @@ document.addEventListener('DOMContentLoaded', function() {
     typeWriter('> Welcome to ZogAI. Your favourite trading expert, ask me anything...', 'welcome-text');
 
     // Chat input handler
-    document.getElementById('chat-input').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            sendMessage();
-        }
-    });
-
-    // Send button handler
-    document.querySelector('.send-btn')?.addEventListener('click', sendMessage);
+    const chatInput = document.getElementById('chat-input');
+    const sendBtn = document.getElementById('sendBtn');
+    
+    if(chatInput) {
+        chatInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !isTyping) {
+                sendMessage();
+            }
+        });
+    }
+    
+    if(sendBtn) {
+        sendBtn.onclick = () => sendMessage();
+    }
 });
 </script>
 </body>
