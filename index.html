@@ -453,57 +453,56 @@
             </div>
         </div>
 
-<!-- Market Updates Section -->
-<div class="mb-8">
-    <h2 class="text-3xl font-bold mb-8 text-center">Market Updates</h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- First card - Market Sentiment -->
-        <div class="market-card rounded-lg p-6">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold">Market Sentiment</h3>
-                <span id="marketSentiment" class="text-green-400">Extremely Bullish</span>
-            </div>
-            <div class="space-y-4">
-                <div class="flex justify-between">
-                    <span>24h Volume:</span>
-                    <span id="volume24h" class="text-purple-400">$69B</span>
+        <!-- Market Updates Section -->
+        <div class="mb-8">
+            <h2 class="text-3xl font-bold mb-8 text-center">Market Updates</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="market-card rounded-lg p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-bold">Market Sentiment</h3>
+                        <span id="marketSentiment" class="text-green-400">Extremely Bullish</span>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="flex justify-between">
+                            <span>24h Volume:</span>
+                            <span id="volume24h" class="text-purple-400">$69B</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Market Dominance:</span>
+                            <span id="btcDominance" class="text-blue-400">42.0%</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="flex justify-between">
-                    <span>Market Dominance:</span>
-                    <span id="btcDominance" class="text-blue-400">42.0%</span>
-                </div>
-            </div>
-        </div>
 
-        <!-- Second card - Trending Memecoins -->
-        <div class="market-card rounded-lg p-6">
-            <h3 class="text-xl font-bold mb-4">Top Trending Memecoins</h3>
-            <div id="trendingMemes" class="space-y-4">
-                <div class="flex justify-between items-center">
-                    <div class="flex items-center gap-2">
-                        <span class="text-2xl">🐕</span>
-                        <span>$DOGE</span>
+                <!-- Trending Memecoins Section -->
+                <div class="market-card rounded-lg p-6">
+                    <h3 class="text-xl font-bold mb-4">Top Trending Memecoins</h3>
+                    <div id="trendingMemes" class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center gap-2">
+                                <span class="text-2xl">🐕</span>
+                                <span>$DOGE</span>
+                            </div>
+                            <span class="text-green-400">+42.0%</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center gap-2">
+                                <span class="text-2xl">🐸</span>
+                                <span>$PEPE</span>
+                            </div>
+                            <span class="text-red-400">-12.5%</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center gap-2">
+                                <span class="text-2xl">🦊</span>
+                                <span>$SHIB</span>
+                            </div>
+                            <span class="text-green-400">+15.7%</span>
+                        </div>
                     </div>
-                    <span class="text-green-400">+42.0%</span>
-                </div>
-                <div class="flex justify-between items-center">
-                    <div class="flex items-center gap-2">
-                        <span class="text-2xl">🐸</span>
-                        <span>$PEPE</span>
-                    </div>
-                    <span class="text-red-400">-12.5%</span>
-                </div>
-                <div class="flex justify-between items-center">
-                    <div class="flex items-center gap-2">
-                        <span class="text-2xl">🦊</span>
-                        <span>$SHIB</span>
-                    </div>
-                    <span class="text-green-400">+15.7%</span>
                 </div>
             </div>
         </div>
-    </div>
-</div>
 
         <!-- Trading Interface -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -573,39 +572,95 @@
     <div id="chat-container" class="h-96 flex flex-col">
         <div id="live-chat-messages" class="flex-grow overflow-y-auto rounded-lg p-4">
             <!-- Messages will appear here -->
+            </div>
+            <div class="flex gap-2">
+                <input type="text" id="live-chat-input" placeholder="Type your message..."
+    class="flex-grow bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white font-mono">
+                <button onclick="sendLiveMessage()" class="button-primary px-4 py-2 rounded-lg">
+                    Send 🚀
+                </button>
+            </div>
         </div>
-        <div class="flex gap-2">
-            <input type="text" id="live-chat-input" placeholder="Type your message..."
-                class="flex-grow bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white font-mono">
-            <button onclick="sendLiveMessage()" class="button-primary px-4 py-2 rounded-lg">
-                Send 🚀
-            </button>
+    </div>
+
+<!-- Top Traders -->
+<div class="goblin-card p-6">
+    <h2 class="text-xl font-bold mb-4">Top Goblins</h2>
+    <div class="space-y-4" id="topGoblinsContainer">
+        <div class="flex items-center justify-between bg-purple-900 bg-opacity-30 p-3 rounded-lg">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl">👑</span>
+                <div>
+                    <div class="font-bold">GoblinKing.eth</div>
+                    <div class="text-sm text-purple-300">+1337% all time</div>
+                </div>
+            </div>
+            <div class="text-green-400 font-bold">+$420k</div>
+        </div>
+        <div class="flex items-center justify-between bg-purple-900 bg-opacity-30 p-3 rounded-lg">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl">🥈</span>
+                <div>
+                    <div class="font-bold">0xDegen...69420</div>
+                    <div class="text-sm text-purple-300">+789% all time</div>
+                </div>
+            </div>
+            <div class="text-green-400 font-bold">+$250k</div>
+        </div>
+        <div class="flex items-center justify-between bg-purple-900 bg-opacity-30 p-3 rounded-lg">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl">🥉</span>
+                <div>
+                    <div class="font-bold">PepeLord</div>
+                    <div class="text-sm text-purple-300">+456% all time</div>
+                </div>
+            </div>
+            <div class="text-green-400 font-bold">+$125k</div>
+        </div>
+        <div class="flex items-center justify-between bg-purple-900 bg-opacity-30 p-3 rounded-lg">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl">4️⃣</span>
+                <div>
+                    <div class="font-bold">RektHunter.sol</div>
+                    <div class="text-sm text-purple-300">+398% all time</div>
+                </div>
+            </div>
+            <div class="text-green-400 font-bold">+$98k</div>
+        </div>
+        <div class="flex items-center justify-between bg-purple-900 bg-opacity-30 p-3 rounded-lg">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl">5️⃣</span>
+                <div>
+                    <div class="font-bold">MoonWarrior</div>
+                    <div class="text-sm text-purple-300">+357% all time</div>
+                </div>
+            </div>
+            <div class="text-green-400 font-bold">+$87k</div>
         </div>
     </div>
 </div>
 
-    <!-- Meme of the Day Section (Moved from bottom) -->
-    <div class="goblin-card p-6">
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-xl font-bold">Meme of the Day</h2>
-            <div class="flex gap-2">
-                <button onclick="voteMeme('up')" class="button-primary px-4 py-2 rounded-lg" id="likeButton">
-                    👍 <span id="likeCount">420</span>
-                </button>
-                <button onclick="voteMeme('down')" class="button-primary px-4 py-2 rounded-lg" id="dislikeButton">
-                    👎 <span id="dislikeCount">69</span>
-                </button>
-            </div>
+<!-- Meme of the Day Section -->
+<div class="goblin-card p-6 mt-8 w-full">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-xl font-bold">Meme of the Day</h2>
+        <div class="flex gap-2">
+            <button onclick="voteMeme('up')" class="button-primary px-4 py-2 rounded-lg" id="likeButton">
+                👍 <span id="likeCount">420</span>
+            </button>
+            <button onclick="voteMeme('down')" class="button-primary px-4 py-2 rounded-lg" id="dislikeButton">
+                👎 <span id="dislikeCount">69</span>
+            </button>
         </div>
-        <div class="bg-purple-900 bg-opacity-30 p-4 rounded-lg text-center">
-            <div class="mb-4">
-                <img src="https://cdn.prod.website-files.com/674396c59212c6ea348b24e0/6788e00195cac2c7785e9408_Gobline%20meme.png" 
-                    alt="Goblin meme" 
-                    class="rounded-lg mx-auto max-w-full h-64 w-64 object-contain">
-            </div>
-            <div class="font-bold text-lg">"When $GOBLIN hits $1"</div>
-            <div class="text-sm text-purple-300">Posted by: MEMElord.eth</div>
+    </div>
+    <div class="bg-purple-900 bg-opacity-30 p-4 rounded-lg text-center">
+        <div class="mb-4">
+            <img src="https://cdn.prod.website-files.com/674396c59212c6ea348b24e0/6788e00195cac2c7785e9408_Gobline%20meme.png" 
+                alt="Goblin meme" 
+                class="rounded-lg mx-auto max-w-full h-64 w-64 object-contain">
         </div>
+        <div class="font-bold text-lg">"When $GOBLIN hits $1"</div>
+        <div class="text-sm text-purple-300">Posted by: MEMElord.eth</div>
     </div>
 </div>
 
@@ -1458,20 +1513,14 @@ document.addEventListener('DOMContentLoaded', function() {
     typeWriter('> Welcome to ZogAI. Your favourite trading expert, ask me anything...', 'welcome-text');
 
     // Chat input handler
-    const chatInput = document.getElementById('chat-input');
-    const sendBtn = document.getElementById('sendBtn');
-    
-    if(chatInput) {
-        chatInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter' && !isTyping) {
-                sendMessage();
-            }
-        });
-    }
-    
-    if(sendBtn) {
-        sendBtn.onclick = () => sendMessage();
-    }
+    document.getElementById('chat-input').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    });
+
+    // Send button handler
+    document.querySelector('.send-btn')?.addEventListener('click', sendMessage);
 });
 </script>
 </body>
