@@ -747,23 +747,28 @@ async function sendMessage() {
     }
 }
 
-// Add event listeners
 document.addEventListener('DOMContentLoaded', () => {
-    const input = document.getElementById('chat-input');
-    const sendBtn = document.getElementById('sendBtn');
+    const liveChatInput = document.getElementById('live-chat-input');
+    if(liveChatInput) {
+        liveChatInput.addEventListener('keypress', function(e) {
+            if(e.key === 'Enter') {
+                sendLiveMessage();
+            }
+        });
+    }
     
-    input.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter' && !isTyping) {
-            sendMessage();
-        }
+    loadSavedMessages();
+    
+    // Add your new code here
+    document.querySelector('.send-button').addEventListener('click', () => {
+        sendLiveMessage();
     });
     
-    sendBtn.addEventListener('click', () => {
-        if (!isTyping) {
-            sendMessage();
+    document.getElementById('live-chat-input').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            sendLiveMessage();
         }
     });
-});
 
 // Memecoin Trending Ticker Using CoinGecko API
 // Memecoin Top Movers Ticker Using CoinGecko API
