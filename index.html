@@ -576,7 +576,7 @@
             <div class="flex gap-2">
                 <input type="text" id="live-chat-input" placeholder="Type your message..."
     class="flex-grow bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white font-mono">
-    <button onclick="sendLiveMessage()" class="send-button button-primary px-4 py-2 rounded-lg">
+    <button id="goblin-chat-send" class="send-button button-primary px-4 py-2 rounded-lg">
         Send 🚀
     </button>
             </div>
@@ -1318,9 +1318,21 @@ setInterval(() => {
 }, 25000);
 
 // Initialize Ably
-// Initialize Ably
 const ably = new Ably.Realtime('NicXIg.8aDmXA:AxQfXY9dp3pYbhAqkc-J6_PcCKfz8Iuui6lkroiZ29w');
 const channel = ably.channels.get('goblin-chat');
+
+document.addEventListener('DOMContentLoaded', () => {
+    const sendButton = document.getElementById('goblin-chat-send');
+    const chatInput = document.getElementById('live-chat-input');
+
+    if(sendButton) {
+        sendButton.addEventListener('click', () => {
+            const message = chatInput.value.trim();
+            if(message) {
+                sendLiveMessage();
+            }
+        });
+    }
 
 // Generate random username for this session
 const username = 'Goblin#' + Math.floor(Math.random() * 9999);
