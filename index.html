@@ -1390,6 +1390,7 @@ function loadSavedMessages() {
 
 // Live Chat functionality
 function sendLiveMessage() {
+    console.log('Message sending...'); // Debug log
     const input = document.getElementById('live-chat-input');
     const message = input.value.trim();
     
@@ -1405,52 +1406,6 @@ function sendLiveMessage() {
     }
 }
 
-// Add event listener for live chat input
-document.addEventListener('DOMContentLoaded', () => {
-    const liveChatInput = document.getElementById('live-chat-input');
-    if(liveChatInput) {
-        liveChatInput.addEventListener('keypress', function(e) {
-            if(e.key === 'Enter') {
-                sendLiveMessage();
-            }
-        });
-    }
-    
-    loadSavedMessages();
-    
-    // Request history from Ably
-    channel.history((err, resultPage) => {
-        if (!err && resultPage) {
-            const messages = resultPage.items.map(item => item.data);
-            const savedMessages = JSON.parse(localStorage.getItem('goblinChatMessages') || '[]');
-            
-            const allMessages = [...savedMessages, ...messages];
-            const uniqueMessages = allMessages.filter((message, index, self) =>
-                index === self.findIndex((m) => 
-                    m.timestamp === message.timestamp && 
-                    m.username === message.username && 
-                    m.message === message.message
-                )
-            );
-            
-            uniqueMessages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-            localStorage.setItem('goblinChatMessages', JSON.stringify(uniqueMessages));
-            loadSavedMessages();
-        }
-    });
-});
-
-// Listen for incoming messages
-channel.subscribe('chat', function(message) {
-    addMessageToUI(message.data);
-});
-
-// Add event listener for live chat input
-document.getElementById('live-chat-input').addEventListener('keypress', function(e) {
-    if(e.key === 'Enter') {
-        sendLiveMessage();
-    }
-});
 // Typing animation function
 function typeWriter(text, elementId, speed = 50) {
     const element = document.getElementById(elementId);
@@ -1481,35 +1436,41 @@ document.addEventListener('DOMContentLoaded', function() {
     // Hide input initially
     document.getElementById('chat-input').classList.add('hidden');
     
-// Start typing animation
-typeWriter('> Welcome to ZogAI. Your favourite trading expert, ask me anything...', 'welcome-text');
+    // Start typing animation
+    typeWriter('> Welcome to ZogAI. Your favourite trading expert, ask me anything...', 'welcome-text');
 
-// Chat input handler
-document.getElementById('chat-input').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-        sendMessage();
-    }
-});
-
-// Send button handler
-document.querySelector('.send-btn')?.addEventListener('click', sendMessage);
-
-// Add event listener for the Goblin Chat send button
-const sendButton = document.querySelector('.send-button');
-if (sendButton) {
-    sendButton.addEventListener('click', () => {
-        sendLiveMessage();
-    });
-}
-
-const goblinChatInput = document.getElementById('live-chat-input');
-if(goblinChatInput) {
-    goblinChatInput.addEventListener('keypress', (e) => {
-        if(e.key === 'Enter') {
-            sendLiveMessage();
+    // Chat input handler
+    document.getElementById('chat-input').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            sendMessage();
         }
     });
-}
+
+    // Send button handler for main chat
+    document.querySelector('.send-btn')?.addEventListener('click', sendMessage);
+
+    // Add event listener for the Goblin Chat send button
+    const sendButton = document.querySelector('.send-button');
+    if (sendButton) {
+        sendButton.addEventListener('click', sendLiveMessage);
+    }
+
+    // Add event listener for live chat input
+    const goblinChatInput = document.getElementById('live-chat-input');
+    if(goblinChatInput) {
+        goblinChatInput.addEventListener('keypress', (e) => {
+            if(e.key === 'Enter') {
+                sendLiveMessage();
+            }
+        });
+    }
+
+    loadSavedMessages();
+
+    // Listen for incoming messages
+    channel.subscribe('chat', function(message) {
+        addMessageToUI(message.data);
+    });
 });
 </script>
 </body>
