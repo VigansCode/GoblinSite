@@ -1353,6 +1353,36 @@ function addMessageToUI(messageData) {
     localStorage.setItem('goblinChatMessages', JSON.stringify(savedMessages));
 }
 
+// Function to load saved messages
+function loadSavedMessages() {
+    const messages = document.getElementById('live-chat-messages');
+    const savedMessages = JSON.parse(localStorage.getItem('goblinChatMessages') || '[]');
+    
+    messages.innerHTML = '';
+    
+    savedMessages.forEach(messageData => {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'chat-message';
+        
+        const timestamp = new Date(messageData.timestamp).toLocaleTimeString();
+        
+        messageDiv.innerHTML = `
+            <div class="chat-username">
+                <span>👾</span>
+                <span>${messageData.username}</span>
+                <span class="chat-timestamp">${timestamp}</span>
+            </div>
+            <div class="mt-2">
+                ${messageData.message}
+            </div>
+        `;
+        
+        messages.appendChild(messageDiv);
+    });
+    
+    messages.scrollTop = messages.scrollHeight;
+}
+
 // Live Chat functionality
 function sendLiveMessage() {
     const input = document.getElementById('live-chat-input');
@@ -1389,7 +1419,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const messages = resultPage.items.map(item => item.data);
             const savedMessages = JSON.parse(localStorage.getItem('goblinChatMessages') || '[]');
             
-            // Combine saved and history messages, remove duplicates
             const allMessages = [...savedMessages, ...messages];
             const uniqueMessages = allMessages.filter((message, index, self) =>
                 index === self.findIndex((m) => 
@@ -1399,13 +1428,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 )
             );
             
-            // Sort by timestamp
             uniqueMessages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-            
-            // Update localStorage with combined messages
             localStorage.setItem('goblinChatMessages', JSON.stringify(uniqueMessages));
-            
-            // Refresh UI
             loadSavedMessages();
         }
     });
