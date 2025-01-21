@@ -1488,6 +1488,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Send button handler
     document.querySelector('.send-btn')?.addEventListener('click', sendMessage);
+    
+    // Add event listener for the Goblin Chat send button
+    const sendGoblinChatBtn = document.querySelector('.button-primary');
+    const goblinChatInput = document.getElementById('live-chat-input');
+    
+    if(sendGoblinChatBtn) {
+        sendGoblinChatBtn.addEventListener('click', () => {
+            sendLiveMessage();
+        });
+    }
+    
+    if(goblinChatInput) {
+        goblinChatInput.addEventListener('keypress', (e) => {
+            if(e.key === 'Enter') {
+                sendLiveMessage();
+            }
+        });
+    }
 });
 </script>
 </body>
