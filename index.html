@@ -576,12 +576,69 @@
             <div class="flex gap-2">
                 <input type="text" id="live-chat-input" placeholder="Type your message..."
     class="flex-grow bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white font-mono">
-    <button id="goblin-chat-send" class="send-button button-primary px-4 py-2 rounded-lg">
-        Send 🚀
-    </button>
+                <button onclick="sendLiveMessage()" class="button-primary px-4 py-2 rounded-lg">
+                    Send 🚀
+                </button>
             </div>
         </div>
     </div>
+
+<!-- Top Traders -->
+<div class="goblin-card p-6">
+    <h2 class="text-xl font-bold mb-4">Top Goblins</h2>
+    <div class="space-y-4" id="topGoblinsContainer">
+        <div class="flex items-center justify-between bg-purple-900 bg-opacity-30 p-3 rounded-lg">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl">👑</span>
+                <div>
+                    <div class="font-bold">GoblinKing.eth</div>
+                    <div class="text-sm text-purple-300">+1337% all time</div>
+                </div>
+            </div>
+            <div class="text-green-400 font-bold">+$420k</div>
+        </div>
+        <div class="flex items-center justify-between bg-purple-900 bg-opacity-30 p-3 rounded-lg">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl">🥈</span>
+                <div>
+                    <div class="font-bold">0xDegen...69420</div>
+                    <div class="text-sm text-purple-300">+789% all time</div>
+                </div>
+            </div>
+            <div class="text-green-400 font-bold">+$250k</div>
+        </div>
+        <div class="flex items-center justify-between bg-purple-900 bg-opacity-30 p-3 rounded-lg">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl">🥉</span>
+                <div>
+                    <div class="font-bold">PepeLord</div>
+                    <div class="text-sm text-purple-300">+456% all time</div>
+                </div>
+            </div>
+            <div class="text-green-400 font-bold">+$125k</div>
+        </div>
+        <div class="flex items-center justify-between bg-purple-900 bg-opacity-30 p-3 rounded-lg">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl">4️⃣</span>
+                <div>
+                    <div class="font-bold">RektHunter.sol</div>
+                    <div class="text-sm text-purple-300">+398% all time</div>
+                </div>
+            </div>
+            <div class="text-green-400 font-bold">+$98k</div>
+        </div>
+        <div class="flex items-center justify-between bg-purple-900 bg-opacity-30 p-3 rounded-lg">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl">5️⃣</span>
+                <div>
+                    <div class="font-bold">MoonWarrior</div>
+                    <div class="text-sm text-purple-300">+357% all time</div>
+                </div>
+            </div>
+            <div class="text-green-400 font-bold">+$87k</div>
+        </div>
+    </div>
+</div>
 
 <!-- Meme of the Day Section -->
 <div class="goblin-card p-6 mt-8 w-full">
@@ -747,28 +804,23 @@ async function sendMessage() {
     }
 }
 
+// Add event listeners
 document.addEventListener('DOMContentLoaded', () => {
-    const liveChatInput = document.getElementById('live-chat-input');
-    if(liveChatInput) {
-        liveChatInput.addEventListener('keypress', function(e) {
-            if(e.key === 'Enter') {
-                sendLiveMessage();
-            }
-        });
-    }
+    const input = document.getElementById('chat-input');
+    const sendBtn = document.getElementById('sendBtn');
     
-    loadSavedMessages();
-    
-    // Add your new code here
-    document.querySelector('.send-button').addEventListener('click', () => {
-        sendLiveMessage();
-    });
-    
-    document.getElementById('live-chat-input').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            sendLiveMessage();
+    input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && !isTyping) {
+            sendMessage();
         }
     });
+    
+    sendBtn.addEventListener('click', () => {
+        if (!isTyping) {
+            sendMessage();
+        }
+    });
+});
 
 // Memecoin Trending Ticker Using CoinGecko API
 // Memecoin Top Movers Ticker Using CoinGecko API
@@ -1318,21 +1370,9 @@ setInterval(() => {
 }, 25000);
 
 // Initialize Ably
+// Initialize Ably
 const ably = new Ably.Realtime('NicXIg.8aDmXA:AxQfXY9dp3pYbhAqkc-J6_PcCKfz8Iuui6lkroiZ29w');
 const channel = ably.channels.get('goblin-chat');
-
-document.addEventListener('DOMContentLoaded', () => {
-    const sendButton = document.getElementById('goblin-chat-send');
-    const chatInput = document.getElementById('live-chat-input');
-
-    if(sendButton) {
-        sendButton.addEventListener('click', () => {
-            const message = chatInput.value.trim();
-            if(message) {
-                sendLiveMessage();
-            }
-        });
-    }
 
 // Generate random username for this session
 const username = 'Goblin#' + Math.floor(Math.random() * 9999);
@@ -1370,39 +1410,8 @@ function addMessageToUI(messageData) {
     localStorage.setItem('goblinChatMessages', JSON.stringify(savedMessages));
 }
 
-// Function to load saved messages
-function loadSavedMessages() {
-    const messages = document.getElementById('live-chat-messages');
-    const savedMessages = JSON.parse(localStorage.getItem('goblinChatMessages') || '[]');
-    
-    messages.innerHTML = '';
-    
-    savedMessages.forEach(messageData => {
-        const messageDiv = document.createElement('div');
-        messageDiv.className = 'chat-message';
-        
-        const timestamp = new Date(messageData.timestamp).toLocaleTimeString();
-        
-        messageDiv.innerHTML = `
-            <div class="chat-username">
-                <span>👾</span>
-                <span>${messageData.username}</span>
-                <span class="chat-timestamp">${timestamp}</span>
-            </div>
-            <div class="mt-2">
-                ${messageData.message}
-            </div>
-        `;
-        
-        messages.appendChild(messageDiv);
-    });
-    
-    messages.scrollTop = messages.scrollHeight;
-}
-
 // Live Chat functionality
 function sendLiveMessage() {
-    console.log('Message sending...'); // Debug log
     const input = document.getElementById('live-chat-input');
     const message = input.value.trim();
     
@@ -1418,6 +1427,58 @@ function sendLiveMessage() {
     }
 }
 
+// Add event listener for live chat input
+document.addEventListener('DOMContentLoaded', () => {
+    const liveChatInput = document.getElementById('live-chat-input');
+    if(liveChatInput) {
+        liveChatInput.addEventListener('keypress', function(e) {
+            if(e.key === 'Enter') {
+                sendLiveMessage();
+            }
+        });
+    }
+    
+    loadSavedMessages();
+    
+    // Request history from Ably
+    channel.history((err, resultPage) => {
+        if (!err && resultPage) {
+            const messages = resultPage.items.map(item => item.data);
+            const savedMessages = JSON.parse(localStorage.getItem('goblinChatMessages') || '[]');
+            
+            // Combine saved and history messages, remove duplicates
+            const allMessages = [...savedMessages, ...messages];
+            const uniqueMessages = allMessages.filter((message, index, self) =>
+                index === self.findIndex((m) => 
+                    m.timestamp === message.timestamp && 
+                    m.username === message.username && 
+                    m.message === message.message
+                )
+            );
+            
+            // Sort by timestamp
+            uniqueMessages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+            
+            // Update localStorage with combined messages
+            localStorage.setItem('goblinChatMessages', JSON.stringify(uniqueMessages));
+            
+            // Refresh UI
+            loadSavedMessages();
+        }
+    });
+});
+
+// Listen for incoming messages
+channel.subscribe('chat', function(message) {
+    addMessageToUI(message.data);
+});
+
+// Add event listener for live chat input
+document.getElementById('live-chat-input').addEventListener('keypress', function(e) {
+    if(e.key === 'Enter') {
+        sendLiveMessage();
+    }
+});
 // Typing animation function
 function typeWriter(text, elementId, speed = 50) {
     const element = document.getElementById(elementId);
@@ -1458,31 +1519,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Send button handler for main chat
+    // Send button handler
     document.querySelector('.send-btn')?.addEventListener('click', sendMessage);
-
-    // Add event listener for the Goblin Chat send button
-    const sendButton = document.querySelector('.send-button');
-    if (sendButton) {
-        sendButton.addEventListener('click', sendLiveMessage);
-    }
-
-    // Add event listener for live chat input
-    const goblinChatInput = document.getElementById('live-chat-input');
-    if(goblinChatInput) {
-        goblinChatInput.addEventListener('keypress', (e) => {
-            if(e.key === 'Enter') {
-                sendLiveMessage();
-            }
-        });
-    }
-
-    loadSavedMessages();
-
-    // Listen for incoming messages
-    channel.subscribe('chat', function(message) {
-        addMessageToUI(message.data);
-    });
 });
 </script>
 </body>
