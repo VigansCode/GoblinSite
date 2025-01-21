@@ -1246,42 +1246,44 @@ updateMarketData(); // Initial update
 
 // Leaderboard functionality
 const goblins = [
-    { name: "GoblinKing", profit: 42.5, amount: 9.8 },
-    { name: "0xDegen...69420", profit: 38.2, amount: 7.2 },
-    { name: "PepeLord", profit: 35.6, amount: 5.4 },
-    { name: "RektHunter.sol", profit: 31.2, amount: 3.8 },
-    { name: "MoonWarrior", profit: 28.7, amount: 2.9 },
-    { name: "DiamondHands", profit: 25.4, amount: 2.1 },
-    { name: "APEmaster", profit: 22.1, amount: 1.5 },
-    { name: "Wojak.sol", profit: 18.5, amount: 0.9 },
-    { name: "BullMarketBen", profit: 15.2, amount: 0.7 },
-    { name: "GoblinSage", profit: 12.8, amount: 0.5 }
+    { name: "MoonWarrior", profit: 42.5, amount: 9.8 },
+    { name: "BullMarketBen", profit: 38.2, amount: 8.5 },
+    { name: "0xDegen...69420", profit: 35.6, amount: 7.2 },
+    { name: "APEmaster", profit: 31.2, amount: 6.4 },
+    { name: "GoblinSage", profit: 28.7, amount: 5.1 },
+    { name: "DiamondHands", profit: 25.4, amount: 4.3 },
+    { name: "PepeLord", profit: 22.1, amount: 3.5 },
+    { name: "Wojak.sol", profit: 18.5, amount: 2.8 },
+    { name: "RektHunter.sol", profit: 15.2, amount: 2.1 },
+    { name: "GoblinKing", profit: 12.8, amount: 1.5 }
 ];
 
 function updateLeaderboard() {
     // Store previous rankings for comparison
     const previousRankings = goblins.map(g => g.name);
     
-    // Update logic
+    // Update logic with smaller changes
     goblins.forEach(goblin => {
         const hotStreak = Math.random() < 0.3;
         
         if (hotStreak) {
-            const jumpMove = Math.random() * 1000 + 500;
+            // Reduced multipliers significantly
+            const jumpMove = Math.random() * 5 + 2; // Max 7% jump
             goblin.profit += jumpMove;
             goblin.amount += (jumpMove/100) * goblin.amount;
         } else {
-            const change = (Math.random() * 200) - 100;
+            const change = (Math.random() * 2) - 1; // Between -1% and +1%
             goblin.profit += change;
             goblin.amount += (change/100) * goblin.amount;
         }
-        goblin.profit = Math.max(100, goblin.profit);
-        goblin.amount = Math.max(40, goblin.amount);
+        // Set reasonable limits
+        goblin.profit = Math.min(Math.max(10, goblin.profit), 50); // Cap at 50%
+        goblin.amount = Math.min(Math.max(1, goblin.amount), 10); // Cap at 10k
     });
 
-    // Sort with random factor
+    // Rest of your update function remains the same
     goblins.sort((a, b) => {
-        const randomFactor = (Math.random() - 0.5) * 200;
+        const randomFactor = (Math.random() - 0.5) * 2; // Reduced random factor
         return (b.profit + randomFactor) - a.profit;
     });
 
@@ -1301,10 +1303,10 @@ function updateLeaderboard() {
                     <span class="text-2xl">${medals[index]}</span>
                     <div>
                         <div class="font-bold">${goblin.name}</div>
-                        <div class="text-sm text-purple-300">+${goblin.profit.toFixed(0)}% all time</div>
+                        <div class="text-sm text-purple-300">+${goblin.profit.toFixed(1)}% all time</div>
                     </div>
                 </div>
-                <div class="text-green-400 font-bold">+$${goblin.amount.toFixed(0)}k</div>
+                <div class="text-green-400 font-bold">+$${goblin.amount.toFixed(1)}k</div>
             </div>
         `;
     });
