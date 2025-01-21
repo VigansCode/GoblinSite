@@ -434,9 +434,21 @@
 </div>
         </div>
     </div>
+<!-- Goblin Model Box -->
+<div class="w-1/2 goblin-card rounded-lg overflow-hidden relative" style="aspect-ratio: 16/14;">
+    <div class="absolute top-0 left-0 w-full bg-gray-900 bg-opacity-80 p-2 pl-4 z-10">
+        <div class="text-white text-lg font-medium">ZogAI</div>
+    </div>
+    <model-viewer src="https://raw.githubusercontent.com/VigansCode/goblin/main/stylized_goblin_rigged.glb"
+                alt="Goblin AI Agent" animation-name="Walking" autoplay shadow-intensity="1"
+                style="width: 100%; height: 100%;">
+    </model-viewer>
+</div>
+        </div>
+    </div>
 
-    <!-- Trading Dashboard -->
-    <div class="container mx-auto px-4">
+     <!-- Trading Dashboard -->
+     <div class="container mx-auto px-4">
         <!-- Goblin Status -->
         <div class="goblin-card p-6 mb-8">
             <div class="flex items-center justify-between">
@@ -452,6 +464,30 @@
                 </div>
             </div>
         </div>
+
+        <!-- Meme of the Day (Moved here to replace Top Goblins) -->
+<div class="goblin-card p-6">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-xl font-bold">Meme of the Day</h2>
+        <div class="flex gap-2">
+            <button onclick="voteMeme('up')" class="button-primary px-4 py-2 rounded-lg" id="likeButton">
+                👍 <span id="likeCount">420</span>
+            </button>
+            <button onclick="voteMeme('down')" class="button-primary px-4 py-2 rounded-lg" id="dislikeButton">
+                👎 <span id="dislikeCount">69</span>
+            </button>
+        </div>
+    </div>
+    <div class="bg-purple-900 bg-opacity-30 p-4 rounded-lg text-center">
+        <div class="mb-4">
+            <img src="https://cdn.prod.website-files.com/674396c59212c6ea348b24e0/6788e00195cac2c7785e9408_Gobline%20meme.png" 
+                alt="Goblin meme" 
+                class="rounded-lg mx-auto max-w-full h-64 w-64 object-contain">
+        </div>
+        <div class="font-bold text-lg">"When $GOBLIN hits $1"</div>
+        <div class="text-sm text-purple-300">Posted by: MEMElord.eth</div>
+    </div>
+</div>
 
         <!-- Market Updates Section -->
         <div class="mb-8">
@@ -582,30 +618,6 @@
             </div>
         </div>
     </div>
-    
-<!-- Meme of the Day (Moved) -->
-<div class="goblin-card p-6">
-    <div class="flex justify-between items-center mb-6">
-        <h2 class="text-xl font-bold">Meme of the Day</h2>
-        <div class="flex gap-2">
-            <button onclick="voteMeme('up')" class="button-primary px-4 py-2 rounded-lg" id="likeButton">
-                👍 <span id="likeCount">420</span>
-            </button>
-            <button onclick="voteMeme('down')" class="button-primary px-4 py-2 rounded-lg" id="dislikeButton">
-                👎 <span id="dislikeCount">69</span>
-            </button>
-        </div>
-    </div>
-    <div class="bg-purple-900 bg-opacity-30 p-4 rounded-lg text-center">
-        <div class="mb-4">
-            <img src="https://cdn.prod.website-files.com/674396c59212c6ea348b24e0/6788e00195cac2c7785e9408_Gobline%20meme.png" 
-                alt="Goblin meme" 
-                class="rounded-lg mx-auto max-w-full h-64 w-64 object-contain">
-        </div>
-        <div class="font-bold text-lg">"When $GOBLIN hits $1"</div>
-        <div class="text-sm text-purple-300">Posted by: MEMElord.eth</div>
-    </div>
-</div>
 
 <!-- Footer Section -->
 <footer class="fixed bottom-0 left-0 right-0 bg-gray-900 bg-opacity-80 py-4">
