@@ -1481,36 +1481,35 @@ document.addEventListener('DOMContentLoaded', function() {
     // Hide input initially
     document.getElementById('chat-input').classList.add('hidden');
     
-    // Start typing animation
-    typeWriter('> Welcome to ZogAI. Your favourite trading expert, ask me anything...', 'welcome-text');
+// Start typing animation
+typeWriter('> Welcome to ZogAI. Your favourite trading expert, ask me anything...', 'welcome-text');
 
-    // Chat input handler
-    document.getElementById('chat-input').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            sendMessage();
+// Chat input handler
+document.getElementById('chat-input').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        sendMessage();
+    }
+});
+
+// Send button handler
+document.querySelector('.send-btn')?.addEventListener('click', sendMessage);
+
+// Add event listener for the Goblin Chat send button
+const sendButton = document.querySelector('.send-button');
+if (sendButton) {
+    sendButton.addEventListener('click', () => {
+        sendLiveMessage();
+    });
+}
+
+const goblinChatInput = document.getElementById('live-chat-input');
+if(goblinChatInput) {
+    goblinChatInput.addEventListener('keypress', (e) => {
+        if(e.key === 'Enter') {
+            sendLiveMessage();
         }
     });
-
-    // Send button handler
-    document.querySelector('.send-btn')?.addEventListener('click', sendMessage);
-    
-    // Add event listener for the Goblin Chat send button
-    const sendGoblinChatBtn = document.querySelector('.button-primary');
-    const goblinChatInput = document.getElementById('live-chat-input');
-    
-    if(sendGoblinChatBtn) {
-        sendGoblinChatBtn.addEventListener('click', () => {
-            sendLiveMessage();
-        });
-    }
-    
-    if(goblinChatInput) {
-        goblinChatInput.addEventListener('keypress', (e) => {
-            if(e.key === 'Enter') {
-                sendLiveMessage();
-            }
-        });
-    }
+}
 });
 </script>
 </body>
