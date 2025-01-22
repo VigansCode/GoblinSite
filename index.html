@@ -779,7 +779,7 @@ When discussing market influencers and crypto:
 // Add these global variables at the top of your script
 let walletConnection = null;
 let walletPublicKey = null;
-let analyticsInterval = null;  // Add this line
+let analyticsInterval = null;
     
     // Typewriter functionality
     let isTyping = false;
@@ -1694,7 +1694,7 @@ function typeWriter(text, elementId, speed = 50) {
 }
 
 // Remove the old updateWalletAnalytics function and replace with this:
-async function updateWalletAnalytics(connection, publicKey) {
+async function updateWalletAnalytics() {
     const solBalanceEl = document.getElementById('solBalance');
     const totalTradesEl = document.getElementById('totalTrades');
     const tradingVolumeEl = document.getElementById('tradingVolume');
@@ -1705,15 +1705,15 @@ async function updateWalletAnalytics(connection, publicKey) {
         totalTradesEl.innerHTML = '<span class="animate-pulse">Loading...</span>';
         tradingVolumeEl.innerHTML = '<span class="animate-pulse">Loading...</span>';
 
-        if (connection && publicKey) {
+        if (walletConnection && walletPublicKey) {
             try {
                 // Get wallet balance
-                const balance = await connection.getBalance(publicKey);
+                const balance = await walletConnection.getBalance(walletPublicKey);
                 const solBalance = (balance / window.solanaWeb3.LAMPORTS_PER_SOL).toFixed(2);
                 
                 // Get transactions
-                const transactions = await connection.getSignaturesForAddress(
-                    publicKey,
+                const transactions = await walletConnection.getSignaturesForAddress(
+                    walletPublicKey,
                     { limit: 1000 }
                 );
                 
@@ -1749,58 +1749,50 @@ async function updateWalletAnalytics(connection, publicKey) {
     }
 }
 
+// Initialize analytics update
+document.addEventListener('DOMContentLoaded', () => {
+    // Initial update
+    updateWalletAnalytics();
+    
+    // Set up periodic updates
+    setInterval(updateWalletAnalytics, 30000);
+});
+
 async function connectWallet() {
     try {
         const { solana } = window;
-        if (!solana || !solana.isPhantom) {
+        if (!solana?.isPhantom) {
             alert('Please install Phantom wallet!');
             return;
         }
 
-        // Clear any existing intervals
-        if (analyticsInterval) {
-            clearInterval(analyticsInterval);
-            analyticsInterval = null;  // Add this line
-        }
-
-        // Show connecting state
         const connectBtn = document.getElementById('wallet-connect-btn');
         connectBtn.textContent = 'Connecting...';
         connectBtn.disabled = true;
 
-        try {
-            // Connect to wallet
-            const response = await solana.connect();
-            walletPublicKey = new window.solanaWeb3.PublicKey(response.publicKey.toString());
-            
-            // Create connection
-            walletConnection = new window.solanaWeb3.Connection(
-                window.solanaWeb3.clusterApiUrl('mainnet-beta'),
-                'confirmed'
-            );
+        // Connect to wallet
+        const response = await solana.connect();
+        walletPublicKey = new window.solanaWeb3.PublicKey(response.publicKey.toString());
+        
+        // Create connection
+        walletConnection = new window.solanaWeb3.Connection(
+            window.solanaWeb3.clusterApiUrl('mainnet-beta'),
+            'confirmed'
+        );
 
-            // Update button
-            connectBtn.textContent = 'Disconnect';
-            connectBtn.disabled = false;
-            connectBtn.onclick = disconnectWallet;
+        // Update button state
+        connectBtn.textContent = 'Disconnect';
+        connectBtn.disabled = false;
+        connectBtn.onclick = disconnectWallet;
 
-            // Initial update
-            await updateWalletAnalytics(walletConnection, walletPublicKey);
-            
-            // Set up auto-refresh
-            analyticsInterval = setInterval(() => {
-                updateWalletAnalytics(walletConnection, walletPublicKey);
-            }, 30000);
-
-        } catch (error) {
-            console.error('Connection error:', error);
-            connectBtn.textContent = 'Connect Wallet';
-            connectBtn.disabled = false;
-            throw error;
-        }
+        // Update wallet data
+        await updateWalletAnalytics();
 
     } catch (error) {
         console.error('Wallet connection error:', error);
+        const connectBtn = document.getElementById('wallet-connect-btn');
+        connectBtn.textContent = 'Connect Wallet';
+        connectBtn.disabled = false;
         alert(error.message || 'Failed to connect wallet');
     }
 }
@@ -1815,19 +1807,13 @@ async function disconnectWallet() {
         walletConnection = null;
         walletPublicKey = null;
 
-        // Clear interval
-        if (analyticsInterval) {
-            clearInterval(analyticsInterval);
-            analyticsInterval = null;  // Add this line
-        }
-
         // Reset button
         connectBtn.textContent = 'Connect Wallet';
         connectBtn.disabled = false;
         connectBtn.onclick = connectWallet;
 
-        // Update UI with DexScreener data
-        await updateWalletAnalytics(null, null);
+        // Update UI
+        await updateWalletAnalytics();
 
     } catch (error) {
         console.error('Error disconnecting:', error);
