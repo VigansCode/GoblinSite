@@ -1146,6 +1146,127 @@ setInterval(updateTickerUI, 300000); // Update every 5 minutes
         trades: [],
         selectedToken: '$PEPE' // Default selected token
     };
+    
+    // Add this to your existing JavaScript code
+
+// Token IDs for CoinGecko API
+const tokenIds = {
+    '$PEPE': 'pepe',
+    '$DOGE': 'dogecoin',
+    '$SHIB': 'shiba-inu',
+    '$WOJAK': 'wojak',  // Note: If not available on CoinGecko, will fallback
+    '$BONK': 'bonk'
+};
+
+// Store real-time price data
+let tokenPrices = {};
+
+// Fetch real-time price data for meme tokens
+async function fetchTokenPrices() {
+    try {
+        const ids = Object.values(tokenIds).join(',');
+        const response = await fetch(
+            `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currency=usd&include_24hr_change=true`
+        );
+        const data = await response.json();
+        
+        // Update token prices
+        Object.entries(tokenIds).forEach(([symbol, id]) => {
+            if (data[id]) {
+                tokenPrices[symbol] = {
+                    price: data[id].usd,
+                    change24h: data[id].usd_24h_change
+                };
+            }
+        });
+
+        // Update UI for selected token
+        if (tradingState.selectedToken && tokenPrices[tradingState.selectedToken]) {
+            updateTokenDisplay(tradingState.selectedToken);
+        }
+    } catch (error) {
+        console.error('Error fetching token prices:', error);
+    }
+}
+
+// Update token display in the UI
+function updateTokenDisplay(token) {
+    const tokenData = tokenPrices[token];
+    if (tokenData) {
+        // Update the token button to show current price
+        const tokenButton = document.querySelector(`button[onclick="selectToken('${token}')"]`);
+        if (tokenButton) {
+            const priceDisplay = document.createElement('div');
+            priceDisplay.className = 'text-xs mt-1';
+            priceDisplay.textContent = `$${tokenData.price.toFixed(6)}`;
+            
+            // Remove old price display if exists
+            const oldPrice = tokenButton.querySelector('.text-xs');
+            if (oldPrice) {
+                oldPrice.remove();
+            }
+            
+            tokenButton.appendChild(priceDisplay);
+            
+            // Add price change indicator
+            const changeClass = tokenData.change24h >= 0 ? 'text-green-400' : 'text-red-400';
+            tokenButton.style.borderColor = tokenData.change24h >= 0 ? '#10B981' : '#EF4444';
+        }
+    }
+}
+
+// Modify existing selectToken function
+const originalSelectToken = selectToken;
+function selectToken(token) {
+    originalSelectToken(token);
+    if (tokenPrices[token]) {
+        updateTokenDisplay(token);
+    }
+}
+
+// Modify executeTrade function to use real price data
+const originalExecuteTrade = executeTrade;
+function executeTrade(direction) {
+    const token = tradingState.selectedToken;
+    const tokenData = tokenPrices[token];
+    
+    if (tokenData) {
+        // Use real price movement for more realistic P&L
+        const amount = parseFloat(document.getElementById('tradeAmount').value);
+        const risk = parseInt(document.getElementById('riskLevel').value);
+        
+        // Calculate P&L based on real 24h change and risk level
+        const volatilityMultiplier = risk / 50; // Higher risk = more volatile
+        const priceChange = tokenData.change24h * volatilityMultiplier;
+        const profitLoss = direction === 'long' ? 
+            amount * (priceChange / 100) : 
+            amount * (-priceChange / 100);
+
+        // Execute trade with real market data
+        const trade = {
+            direction: direction,
+            amount: amount,
+            profitLoss: profitLoss.toFixed(2),
+            timestamp: new Date(),
+            pair: token,
+            price: tokenData.price
+        };
+
+        tradingState.trades.unshift(trade);
+        tradingState.balance += parseFloat(profitLoss);
+        
+        updateTradeHistory();
+        updateBalance();
+        updateGoblinMood();
+    } else {
+        originalExecuteTrade(direction);
+    }
+}
+
+// Start fetching price data
+fetchTokenPrices();
+// Update prices every 30 seconds
+setInterval(fetchTokenPrices, 30000);
 
     // Token selection function
     function selectToken(token) {
