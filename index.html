@@ -1146,7 +1146,7 @@ setInterval(updateTickerUI, 300000); // Update every 5 minutes
         trades: [],
         selectedToken: '$PEPE' // Default selected token
     };
-
+    
     // Add this to your existing JavaScript code
 
 // Token IDs for CoinGecko API
@@ -1154,12 +1154,14 @@ const tokenIds = {
     '$PEPE': 'pepe',
     '$DOGE': 'dogecoin',
     '$SHIB': 'shiba-inu',
-    '$WOJAK': 'wojak',
+    '$WOJAK': 'wojak',  // Note: If not available on CoinGecko, will fallback
     '$BONK': 'bonk'
 };
 
+// Store real-time price data
 let tokenPrices = {};
 
+// Fetch real-time price data for meme tokens
 async function fetchTokenPrices() {
     try {
         const ids = Object.values(tokenIds).join(',');
@@ -1168,6 +1170,7 @@ async function fetchTokenPrices() {
         );
         const data = await response.json();
         
+        // Update token prices
         Object.entries(tokenIds).forEach(([symbol, id]) => {
             if (data[id]) {
                 tokenPrices[symbol] = {
@@ -1176,34 +1179,70 @@ async function fetchTokenPrices() {
                 };
             }
         });
+
+        // Update UI for selected token
+        if (tradingState.selectedToken && tokenPrices[tradingState.selectedToken]) {
+            updateTokenDisplay(tradingState.selectedToken);
+        }
     } catch (error) {
         console.error('Error fetching token prices:', error);
     }
 }
 
-// Start fetching price data
-fetchTokenPrices();
-setInterval(fetchTokenPrices, 30000);
-
-    // Token selection function
-    function selectToken(token) {
-        tradingState.selectedToken = token;
-        // Visual feedback could be added here
+// Update token display in the UI
+function updateTokenDisplay(token) {
+    const tokenData = tokenPrices[token];
+    if (tokenData) {
+        // Update the token button to show current price
+        const tokenButton = document.querySelector(`button[onclick="selectToken('${token}')"]`);
+        if (tokenButton) {
+            const priceDisplay = document.createElement('div');
+            priceDisplay.className = 'text-xs mt-1';
+            priceDisplay.textContent = `$${tokenData.price.toFixed(6)}`;
+            
+            // Remove old price display if exists
+            const oldPrice = tokenButton.querySelector('.text-xs');
+            if (oldPrice) {
+                oldPrice.remove();
+            }
+            
+            tokenButton.appendChild(priceDisplay);
+            
+            // Add price change indicator
+            const changeClass = tokenData.change24h >= 0 ? 'text-green-400' : 'text-red-400';
+            tokenButton.style.borderColor = tokenData.change24h >= 0 ? '#10B981' : '#EF4444';
+        }
     }
-    function executeTrade(direction) {
+}
+
+// Modify existing selectToken function
+const originalSelectToken = selectToken;
+function selectToken(token) {
+    originalSelectToken(token);
+    if (tokenPrices[token]) {
+        updateTokenDisplay(token);
+    }
+}
+
+// Modify executeTrade function to use real price data
+const originalExecuteTrade = executeTrade;
+function executeTrade(direction) {
     const token = tradingState.selectedToken;
     const tokenData = tokenPrices[token];
     
     if (tokenData) {
+        // Use real price movement for more realistic P&L
         const amount = parseFloat(document.getElementById('tradeAmount').value);
         const risk = parseInt(document.getElementById('riskLevel').value);
         
-        const volatilityMultiplier = risk / 50;
+        // Calculate P&L based on real 24h change and risk level
+        const volatilityMultiplier = risk / 50; // Higher risk = more volatile
         const priceChange = tokenData.change24h * volatilityMultiplier;
         const profitLoss = direction === 'long' ? 
             amount * (priceChange / 100) : 
             amount * (-priceChange / 100);
 
+        // Execute trade with real market data
         const trade = {
             direction: direction,
             amount: amount,
@@ -1213,27 +1252,6 @@ setInterval(fetchTokenPrices, 30000);
             price: tokenData.price
         };
 
-        const btn = event.target;
-        const rect = btn.getBoundingClientRect();
-
-        const emoji = document.createElement('div');
-        emoji.className = 'float-emoji';
-        emoji.textContent = '✨';
-        emoji.style.left = rect.left + 'px';
-        emoji.style.top = rect.top + 'px';
-        document.body.appendChild(emoji);
-        setTimeout(() => emoji.remove(), 2000);
-
-        if(parseFloat(trade.profitLoss) > 0) {
-            const goblin = document.createElement('div');
-            goblin.className = 'float-emoji';
-            goblin.textContent = '👺';
-            goblin.style.left = (rect.left + 50) + 'px';
-            goblin.style.top = rect.top + 'px';
-            document.body.appendChild(goblin);
-            setTimeout(() => goblin.remove(), 2000);
-        }
-
         tradingState.trades.unshift(trade);
         tradingState.balance += parseFloat(profitLoss);
         
@@ -1241,30 +1259,72 @@ setInterval(fetchTokenPrices, 30000);
         updateBalance();
         updateGoblinMood();
     } else {
-        // Fallback to random generation if no market data
-        const profitLossPercent = (Math.random() - 0.5) * (risk / 25);
-        const profitLoss = amount * profitLossPercent;
-        
-        const trade = {
-            direction: direction,
-            amount: amount,
-            profitLoss: profitLoss.toFixed(2),
-            timestamp: new Date(),
-            pair: token
-        };
-
-        tradingState.trades.unshift(trade);
-        tradingState.balance += parseFloat(profitLoss);
-        
-        updateTradeHistory();
-        updateBalance();
-        updateGoblinMood();
+        originalExecuteTrade(direction);
     }
 }
 
-// Start the price updates
+// Start fetching price data
 fetchTokenPrices();
+// Update prices every 30 seconds
 setInterval(fetchTokenPrices, 30000);
+
+    // Token selection function
+    function selectToken(token) {
+        tradingState.selectedToken = token;
+        // Visual feedback could be added here
+    }
+
+        // Execute trade function
+        function executeTrade(direction) {
+            const amount = parseFloat(document.getElementById('tradeAmount').value);
+            const risk = parseInt(document.getElementById('riskLevel').value);
+            
+            // Generate a random profit/loss based on risk level
+            const profitLossPercent = (Math.random() - 0.5) * (risk / 25);
+            const profitLoss = amount * profitLossPercent;
+            
+// Create trade record with selected token
+const trade = {
+    direction: direction,
+    amount: amount,
+    profitLoss: profitLoss.toFixed(2),
+    timestamp: new Date(),
+    pair: tradingState.selectedToken // Use the selected token
+};
+
+// Add visual effects for trade (ADD THIS NEW CODE HERE)
+const btn = event.target;
+const rect = btn.getBoundingClientRect();
+
+// Sparkle effect
+const emoji = document.createElement('div');
+emoji.className = 'float-emoji';
+emoji.textContent = '✨';
+emoji.style.left = rect.left + 'px';
+emoji.style.top = rect.top + 'px';
+document.body.appendChild(emoji);
+setTimeout(() => emoji.remove(), 2000);
+
+// Goblin emoji for profitable trades
+if(parseFloat(trade.profitLoss) > 0) {
+    const goblin = document.createElement('div');
+    goblin.className = 'float-emoji';
+    goblin.textContent = '👺';
+    goblin.style.left = (rect.left + 50) + 'px';
+    goblin.style.top = rect.top + 'px';
+    document.body.appendChild(goblin);
+    setTimeout(() => goblin.remove(), 2000);
+}
+
+// Update trading state
+tradingState.trades.unshift(trade);
+            tradingState.balance += parseFloat(profitLoss);
+            
+            // Update UI
+            updateTradeHistory();
+            updateBalance();
+            updateGoblinMood();
+        }
 
         // Update trade history UI
         function updateTradeHistory() {
