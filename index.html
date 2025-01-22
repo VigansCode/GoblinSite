@@ -1180,49 +1180,7 @@ async function fetchTokenPrices() {
     }
 }
 
-// Modify executeTrade function to use real price data
-function executeTrade(direction) {
-    const token = tradingState.selectedToken;
-    const tokenData = tokenPrices[token];
-    const amount = parseFloat(document.getElementById('tradeAmount').value);
-    const risk = parseInt(document.getElementById('riskLevel').value);
-    
-    if (tokenData && tokenData.change24h) {
-        const profitLoss = direction === 'long' ? 
-            amount * (tokenData.change24h / 100) : 
-            amount * (-tokenData.change24h / 100);
-
-        const trade = {
-            direction: direction,
-            amount: amount,
-            profitLoss: profitLoss.toFixed(2),
-            timestamp: new Date(),
-            pair: token,
-            price: tokenData.price
-        };
-
-        tradingState.trades.unshift(trade);
-        tradingState.balance += parseFloat(profitLoss);
-        
-        // Visual feedback
-        const btn = event.target;
-        const rect = btn.getBoundingClientRect();
-
-        const emoji = document.createElement('div');
-        emoji.className = 'float-emoji';
-        emoji.textContent = '✨';
-        emoji.style.left = rect.left + 'px';
-        emoji.style.top = rect.top + 'px';
-        document.body.appendChild(emoji);
-        setTimeout(() => emoji.remove(), 2000);
-
-        updateTradeHistory();
-        updateBalance();
-        updateGoblinMood();
-    }
-}
-
-// Start fetching price data
+// Start price updates
 fetchTokenPrices();
 setInterval(fetchTokenPrices, 30000);
 
