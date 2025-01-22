@@ -1761,82 +1761,55 @@ document.addEventListener('DOMContentLoaded', () => {
 // Put this at the top with your other global variables
 let solanaConnection = null;
 
-async function connectWallet() {
-    const solBalanceEl = document.getElementById('solBalance');
-    const totalTradesEl = document.getElementById('totalTrades');
-    const tradingVolumeEl = document.getElementById('tradingVolume');
-    const connectBtn = document.getElementById('wallet-connect-btn');
-
+async function getWalletAnalytics(EZppbZe5RaXryEd47NdPRX1ytjCd7bpqnZMDQQXMBB2s) {
     try {
-        const { solana } = window;
-        if (!solana?.isPhantom) {
-            alert('Please install Phantom wallet');
-            return;
-        }
+        const solBalanceEl = document.getElementById('solBalance');
+        const totalTradesEl = document.getElementById('totalTrades');
+        const tradingVolumeEl = document.getElementById('tradingVolume');
 
-        connectBtn.innerText = 'Connecting...';
+        // Show loading states
+        solBalanceEl.innerHTML = '<span class="animate-pulse">Loading...</span>';
+        totalTradesEl.innerHTML = '<span class="animate-pulse">Loading...</span>';
+        tradingVolumeEl.innerHTML = '<span class="animate-pulse">Loading...</span>';
 
-        // Connect
-        const resp = await solana.connect();
-        solanaConnection = new window.solanaWeb3.Connection(
+        // Create connection
+        const connection = new window.solanaWeb3.Connection(
             window.solanaWeb3.clusterApiUrl('mainnet-beta')
         );
 
-        // Get data
-        const balance = await solanaConnection.getBalance(resp.publicKey);
+        // Convert address string to PublicKey
+        const pubKey = new window.solanaWeb3.PublicKey(walletAddress);
+
+        // Get balance
+        const balance = await connection.getBalance(pubKey);
         const solBalance = (balance / window.solanaWeb3.LAMPORTS_PER_SOL).toFixed(2);
+
+        // Get recent transactions
+        const transactions = await connection.getSignaturesForAddress(pubKey, { limit: 1000 });
+        
+        // Calculate 24h transactions
+        const twentyFourHoursAgo = new Date().getTime() - 24 * 60 * 60 * 1000;
+        const recentTxs = transactions.filter(tx => 
+            tx.blockTime && (tx.blockTime * 1000) > twentyFourHoursAgo
+        );
 
         // Update UI
         solBalanceEl.textContent = `${solBalance} SOL`;
-        totalTradesEl.textContent = 'Connected';
-        tradingVolumeEl.textContent = 'Connected';
-        connectBtn.innerText = 'Disconnect';
-        connectBtn.onclick = disconnectWallet;
+        totalTradesEl.textContent = transactions.length;
+        tradingVolumeEl.textContent = `${recentTxs.length} txs/24h`;
 
     } catch (error) {
-        console.error(error);
+        console.error('Error fetching wallet data:', error);
         solBalanceEl.textContent = 'Error';
         totalTradesEl.textContent = 'Error';
         tradingVolumeEl.textContent = 'Error';
-        connectBtn.innerText = 'Connect Wallet';
+        // Update every 30 seconds
+setInterval(() => getWalletAnalytics('YOUR_WALLET_ADDRESS_HERE'), 30000);
     }
 }
 
-async function disconnectWallet() {
-    const connectBtn = document.getElementById('wallet-connect-btn');
-    const solBalanceEl = document.getElementById('solBalance');
-    const totalTradesEl = document.getElementById('totalTrades');
-    const tradingVolumeEl = document.getElementById('tradingVolume');
-
-    try {
-        await window.solana?.disconnect();
-        solanaConnection = null;
-
-        solBalanceEl.textContent = 'Not Connected';
-        totalTradesEl.textContent = 'Not Connected';
-        tradingVolumeEl.textContent = 'Not Connected';
-        
-        connectBtn.innerText = 'Connect Wallet';
-        connectBtn.onclick = connectWallet;
-    } catch (error) {
-        console.error(error);
-    }
-}
-
-// Create and add connect button if it doesn't exist
-document.addEventListener('DOMContentLoaded', function() {
-    if (!document.getElementById('wallet-connect-btn')) {
-        const connectBtn = document.createElement('button');
-        connectBtn.id = 'wallet-connect-btn';
-        connectBtn.className = 'button-primary px-4 py-2 rounded-lg';
-        connectBtn.textContent = 'Connect Wallet';
-        connectBtn.onclick = connectWallet;
-        document.querySelector('.goblin-card').appendChild(connectBtn);
-    }
-
-    // Start updating analytics
-    updateWalletAnalytics(null, null);
-});
+// Call it with your wallet address
+getWalletAnalytics('YOUR_WALLET_ADDRESS_HERE');
 
 // Keep the existing voice agents code and event listeners
 function initializeVoiceAgents() {
