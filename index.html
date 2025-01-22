@@ -453,6 +453,29 @@
             </div>
         </div>
 
+            <!-- SOL Balance & Trade Tracking -->
+<div class="goblin-card p-6 mb-8">
+    <div class="flex justify-between items-center">
+        <div>
+            <h2 class="text-xl font-bold mb-2">Wallet Analytics</h2>
+            <div class="flex items-center gap-4">
+                <div>
+                    <p class="text-sm text-purple-300">SOL Balance</p>
+                    <p class="text-2xl font-bold text-cyan-400" id="solBalance">Loading...</p>
+                </div>
+                <div>
+                    <p class="text-sm text-purple-300">Total Trades</p>
+                    <p class="text-2xl font-bold text-purple-400" id="totalTrades">Loading...</p>
+                </div>
+            </div>
+        </div>
+        <div class="text-right">
+            <p class="text-sm text-purple-300">24h Trading Volume</p>
+            <p class="text-2xl font-bold text-green-400" id="tradingVolume">Loading...</p>
+        </div>
+    </div>
+</div>
+        
         <!-- Voice Agents Section -->
 <div class="voice-agents-section mb-16">
     <div class="goblin-card p-8">
@@ -1657,61 +1680,71 @@ function typeWriter(text, elementId, speed = 50) {
     type();
 }
 
+async function updateWalletAnalytics() {
+   try {
+       const response = await fetch('https://api.dexscreener.com/latest/dex/tokens/solana/SOL');
+       const data = await response.json();
+       
+       document.getElementById('solBalance').textContent = 
+           `${parseFloat(data.pairs[0].priceUsd).toFixed(2)} USD`;
+       document.getElementById('totalTrades').textContent = 
+           data.pairs[0].txns.h24.buys + data.pairs[0].txns.h24.sells;
+       document.getElementById('tradingVolume').textContent = 
+           `$${(data.pairs[0].volume.h24 / 1000000).toFixed(2)}M`;
+           
+   } catch (error) {
+       console.error('Error fetching DEXScreener data:', error);
+   }
+}
+
+setInterval(updateWalletAnalytics, 30000);
+updateWalletAnalytics();
+
 let currentAudio = null;
 
 function initializeVoiceAgents() {
-    const zogVoice = document.querySelector('.voice-item[data-character="zog"]');
-    const morphVideo = document.getElementById('goblin-morph');
+   const zogVoice = document.querySelector('.voice-item[data-character="zog"]');
+   const morphVideo = document.getElementById('goblin-morph');
 
-    if (zogVoice) {
-        zogVoice.addEventListener('click', () => {
-            // Stop any currently playing audio
-            if (currentAudio) {
-                currentAudio.pause();
-                currentAudio.currentTime = 0;
-            }
+   if (zogVoice) {
+       zogVoice.addEventListener('click', () => {
+           if (currentAudio) {
+               currentAudio.pause();
+               currentAudio.currentTime = 0;
+           }
 
-            // Create and play new audio
-            currentAudio = new Audio('/assets/voices/zog.mp3');
-            currentAudio.play().catch(error => {
-                console.log('Audio playback failed:', error);
-            });
+           currentAudio = new Audio('/assets/voices/zog.mp3');
+           currentAudio.play().catch(error => {
+               console.log('Audio playback failed:', error);
+           });
 
-            // Update video if available
-            if (morphVideo && morphVideo.src !== '/assets/videos/zog.mp4') {
-                morphVideo.src = '/assets/videos/zog.mp4';
-                morphVideo.play().catch(error => {
-                    console.log('Video playback failed:', error);
-                });
-            }
+           if (morphVideo && morphVideo.src !== '/assets/videos/zog.mp4') {
+               morphVideo.src = '/assets/videos/zog.mp4';
+               morphVideo.play().catch(error => {
+                   console.log('Video playback failed:', error);
+               });
+           }
 
-            // Visual feedback
-            zogVoice.classList.add('bg-opacity-30');
-            setTimeout(() => {
-                zogVoice.classList.remove('bg-opacity-30');
-            }, 200);
-        });
-    }
+           zogVoice.classList.add('bg-opacity-30');
+           setTimeout(() => {
+               zogVoice.classList.remove('bg-opacity-30');
+           }, 200);
+       });
+   }
 }
 
-// Initialize when document loads
 document.addEventListener('DOMContentLoaded', function() {
-    initializeVoiceAgents();
-    // Hide input initially
-    document.getElementById('chat-input').classList.add('hidden');
-    
-    // Start typing animation
-    typeWriter('> Welcome to ZogAI. Your favourite trading expert, ask me anything...', 'welcome-text');
+   initializeVoiceAgents();
+   document.getElementById('chat-input').classList.add('hidden');
+   typeWriter('> Welcome to ZogAI. Your favourite trading expert, ask me anything...', 'welcome-text');
 
-    // Chat input handler
-    document.getElementById('chat-input').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            sendMessage();
-        }
-    });
+   document.getElementById('chat-input').addEventListener('keypress', function(e) {
+       if (e.key === 'Enter') {
+           sendMessage();
+       }
+   });
 
-    // Send button handler
-    document.querySelector('.send-btn')?.addEventListener('click', sendMessage);
+   document.querySelector('.send-btn')?.addEventListener('click', sendMessage);
 });
 </script>
 </body>
