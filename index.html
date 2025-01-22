@@ -1149,8 +1149,7 @@ setInterval(updateTickerUI, 300000); // Update every 5 minutes
 
     // Add this to your existing JavaScript code
 
-// Token IDs for CoinGecko API
-const tokenIds = {
+    const tokenIds = {
     '$PEPE': 'pepe',
     '$DOGE': 'dogecoin',
     '$SHIB': 'shiba-inu',
@@ -1158,10 +1157,8 @@ const tokenIds = {
     '$BONK': 'bonk'
 };
 
-// Store real-time price data
 let tokenPrices = {};
 
-// Fetch real-time price data for meme tokens
 async function fetchTokenPrices() {
     try {
         const ids = Object.values(tokenIds).join(',');
@@ -1170,7 +1167,6 @@ async function fetchTokenPrices() {
         );
         const data = await response.json();
         
-        // Update token prices
         Object.entries(tokenIds).forEach(([symbol, id]) => {
             if (data[id]) {
                 tokenPrices[symbol] = {
@@ -1237,17 +1233,20 @@ setInterval(fetchTokenPrices, 30000);
     }
 
         // Execute trade function
-        function executeTrade(direction) {
+        const originalExecuteTrade = executeTrade;
+function executeTrade(direction) {
     const token = tradingState.selectedToken;
     const tokenData = tokenPrices[token];
     
-    if (tokenData && tokenData.change24h) {
+    if (tokenData) {
         const amount = parseFloat(document.getElementById('tradeAmount').value);
+        const risk = parseInt(document.getElementById('riskLevel').value);
         
-        // Use actual price change from CoinGecko
+        const volatilityMultiplier = risk / 50;
+        const priceChange = tokenData.change24h * volatilityMultiplier;
         const profitLoss = direction === 'long' ? 
-            amount * (tokenData.change24h / 100) : 
-            amount * (-tokenData.change24h / 100);
+            amount * (priceChange / 100) : 
+            amount * (-priceChange / 100);
 
         const trade = {
             direction: direction,
@@ -1255,8 +1254,32 @@ setInterval(fetchTokenPrices, 30000);
             profitLoss: profitLoss.toFixed(2),
             timestamp: new Date(),
             pair: token,
-            price: tokenData.price  // Actual current price
+            price: tokenData.price
         };
+
+        // Add visual effects for trade (KEEPING YOUR ORIGINAL EFFECTS)
+        const btn = event.target;
+        const rect = btn.getBoundingClientRect();
+
+        // Sparkle effect
+        const emoji = document.createElement('div');
+        emoji.className = 'float-emoji';
+        emoji.textContent = '✨';
+        emoji.style.left = rect.left + 'px';
+        emoji.style.top = rect.top + 'px';
+        document.body.appendChild(emoji);
+        setTimeout(() => emoji.remove(), 2000);
+
+        // Goblin emoji for profitable trades
+        if(parseFloat(trade.profitLoss) > 0) {
+            const goblin = document.createElement('div');
+            goblin.className = 'float-emoji';
+            goblin.textContent = '👺';
+            goblin.style.left = (rect.left + 50) + 'px';
+            goblin.style.top = rect.top + 'px';
+            document.body.appendChild(goblin);
+            setTimeout(() => goblin.remove(), 2000);
+        }
 
         tradingState.trades.unshift(trade);
         tradingState.balance += parseFloat(profitLoss);
@@ -1264,10 +1287,12 @@ setInterval(fetchTokenPrices, 30000);
         updateTradeHistory();
         updateBalance();
         updateGoblinMood();
+    } else {
+        originalExecuteTrade(direction);
     }
 }
 
-// Start the real-time updates
+// Start the price updates
 fetchTokenPrices();
 setInterval(fetchTokenPrices, 30000);
 
