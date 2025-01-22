@@ -1158,10 +1158,8 @@ const tokenIds = {
     '$BONK': 'bonk'
 };
 
-// Store real-time price data
 let tokenPrices = {};
 
-// Fetch real-time price data for meme tokens
 async function fetchTokenPrices() {
     try {
         const ids = Object.values(tokenIds).join(',');
@@ -1170,7 +1168,6 @@ async function fetchTokenPrices() {
         );
         const data = await response.json();
         
-        // Update token prices
         Object.entries(tokenIds).forEach(([symbol, id]) => {
             if (data[id]) {
                 tokenPrices[symbol] = {
@@ -1193,10 +1190,7 @@ setInterval(fetchTokenPrices, 30000);
         tradingState.selectedToken = token;
         // Visual feedback could be added here
     }
-
-        // Execute trade function
-        const originalExecuteTrade = executeTrade;
-function executeTrade(direction) {
+    function executeTrade(direction) {
     const token = tradingState.selectedToken;
     const tokenData = tokenPrices[token];
     
@@ -1219,11 +1213,9 @@ function executeTrade(direction) {
             price: tokenData.price
         };
 
-        // Add visual effects for trade (KEEPING YOUR ORIGINAL EFFECTS)
         const btn = event.target;
         const rect = btn.getBoundingClientRect();
 
-        // Sparkle effect
         const emoji = document.createElement('div');
         emoji.className = 'float-emoji';
         emoji.textContent = '✨';
@@ -1232,7 +1224,6 @@ function executeTrade(direction) {
         document.body.appendChild(emoji);
         setTimeout(() => emoji.remove(), 2000);
 
-        // Goblin emoji for profitable trades
         if(parseFloat(trade.profitLoss) > 0) {
             const goblin = document.createElement('div');
             goblin.className = 'float-emoji';
@@ -1250,7 +1241,24 @@ function executeTrade(direction) {
         updateBalance();
         updateGoblinMood();
     } else {
-        originalExecuteTrade(direction);
+        // Fallback to random generation if no market data
+        const profitLossPercent = (Math.random() - 0.5) * (risk / 25);
+        const profitLoss = amount * profitLossPercent;
+        
+        const trade = {
+            direction: direction,
+            amount: amount,
+            profitLoss: profitLoss.toFixed(2),
+            timestamp: new Date(),
+            pair: token
+        };
+
+        tradingState.trades.unshift(trade);
+        tradingState.balance += parseFloat(profitLoss);
+        
+        updateTradeHistory();
+        updateBalance();
+        updateGoblinMood();
     }
 }
 
