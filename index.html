@@ -1149,7 +1149,8 @@ setInterval(updateTickerUI, 300000); // Update every 5 minutes
 
     // Add this to your existing JavaScript code
 
-    const tokenIds = {
+// Token IDs for CoinGecko API
+const tokenIds = {
     '$PEPE': 'pepe',
     '$DOGE': 'dogecoin',
     '$SHIB': 'shiba-inu',
@@ -1157,8 +1158,10 @@ setInterval(updateTickerUI, 300000); // Update every 5 minutes
     '$BONK': 'bonk'
 };
 
+// Store real-time price data
 let tokenPrices = {};
 
+// Fetch real-time price data for meme tokens
 async function fetchTokenPrices() {
     try {
         const ids = Object.values(tokenIds).join(',');
@@ -1167,6 +1170,7 @@ async function fetchTokenPrices() {
         );
         const data = await response.json();
         
+        // Update token prices
         Object.entries(tokenIds).forEach(([symbol, id]) => {
             if (data[id]) {
                 tokenPrices[symbol] = {
@@ -1180,7 +1184,7 @@ async function fetchTokenPrices() {
     }
 }
 
-// Start price updates
+// Start fetching price data
 fetchTokenPrices();
 setInterval(fetchTokenPrices, 30000);
 
