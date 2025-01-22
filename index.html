@@ -775,6 +775,11 @@ When discussing market influencers and crypto:
 - Talk about mainstream adoption milestones
 - Reference concrete examples of crypto developments
 - Stay focused on trading implications and market effects`;
+
+// Add these global variables at the top of your script
+let walletConnection = null;
+let walletPublicKey = null;
+let analyticsInterval = null;  // Add this line
     
     // Typewriter functionality
     let isTyping = false;
@@ -1755,6 +1760,7 @@ async function connectWallet() {
         // Clear any existing intervals
         if (analyticsInterval) {
             clearInterval(analyticsInterval);
+            analyticsInterval = null;  // Add this line
         }
 
         // Show connecting state
@@ -1812,6 +1818,7 @@ async function disconnectWallet() {
         // Clear interval
         if (analyticsInterval) {
             clearInterval(analyticsInterval);
+            analyticsInterval = null;  // Add this line
         }
 
         // Reset button
@@ -1820,7 +1827,7 @@ async function disconnectWallet() {
         connectBtn.onclick = connectWallet;
 
         // Update UI with DexScreener data
-        updateWalletAnalytics(null, null);
+        await updateWalletAnalytics(null, null);
 
     } catch (error) {
         console.error('Error disconnecting:', error);
