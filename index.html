@@ -1166,6 +1166,7 @@ async function fetchPrices() {
             `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currency=usd&include_24hr_change=true`
         );
         const data = await response.json();
+        console.log("API Response:", data); // Add this line to see what we're getting
         tradingState.prices = data;
         updatePriceDisplay();
     } catch (error) {
@@ -1218,11 +1219,18 @@ function selectToken(token) {
     }
 }
 
-function executeTrade(direction) {
+Copyfunction executeTrade(direction) {
     const amount = parseFloat(document.getElementById('tradeAmount').value);
     const risk = parseInt(document.getElementById('riskLevel').value);
     const token = tradingState.selectedToken;
     const tokenData = tokens[token];
+    
+    console.log("Executing trade with data:", {
+        token,
+        tokenData,
+        priceData: tradingState.prices[tokenData.id],
+        allPrices: tradingState.prices
+    });
     
     if (!tokenData || !tradingState.prices[tokenData.id]) {
         console.error('No price data available');
