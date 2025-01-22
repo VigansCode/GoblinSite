@@ -1270,55 +1270,38 @@ setInterval(fetchTokenPrices, 30000);
 
         // Execute trade function
         function executeTrade(direction) {
-            const amount = parseFloat(document.getElementById('tradeAmount').value);
-            const risk = parseInt(document.getElementById('riskLevel').value);
-            
-            // Generate a random profit/loss based on risk level
-            const profitLossPercent = (Math.random() - 0.5) * (risk / 25);
-            const profitLoss = amount * profitLossPercent;
-            
-// Create trade record with selected token
-const trade = {
-    direction: direction,
-    amount: amount,
-    profitLoss: profitLoss.toFixed(2),
-    timestamp: new Date(),
-    pair: tradingState.selectedToken // Use the selected token
-};
+    const token = tradingState.selectedToken;
+    const tokenData = tokenPrices[token];
+    
+    if (tokenData && tokenData.change24h) {
+        const amount = parseFloat(document.getElementById('tradeAmount').value);
+        
+        // Use actual price change from CoinGecko
+        const profitLoss = direction === 'long' ? 
+            amount * (tokenData.change24h / 100) : 
+            amount * (-tokenData.change24h / 100);
 
-// Add visual effects for trade (ADD THIS NEW CODE HERE)
-const btn = event.target;
-const rect = btn.getBoundingClientRect();
+        const trade = {
+            direction: direction,
+            amount: amount,
+            profitLoss: profitLoss.toFixed(2),
+            timestamp: new Date(),
+            pair: token,
+            price: tokenData.price  // Actual current price
+        };
 
-// Sparkle effect
-const emoji = document.createElement('div');
-emoji.className = 'float-emoji';
-emoji.textContent = '✨';
-emoji.style.left = rect.left + 'px';
-emoji.style.top = rect.top + 'px';
-document.body.appendChild(emoji);
-setTimeout(() => emoji.remove(), 2000);
-
-// Goblin emoji for profitable trades
-if(parseFloat(trade.profitLoss) > 0) {
-    const goblin = document.createElement('div');
-    goblin.className = 'float-emoji';
-    goblin.textContent = '👺';
-    goblin.style.left = (rect.left + 50) + 'px';
-    goblin.style.top = rect.top + 'px';
-    document.body.appendChild(goblin);
-    setTimeout(() => goblin.remove(), 2000);
+        tradingState.trades.unshift(trade);
+        tradingState.balance += parseFloat(profitLoss);
+        
+        updateTradeHistory();
+        updateBalance();
+        updateGoblinMood();
+    }
 }
 
-// Update trading state
-tradingState.trades.unshift(trade);
-            tradingState.balance += parseFloat(profitLoss);
-            
-            // Update UI
-            updateTradeHistory();
-            updateBalance();
-            updateGoblinMood();
-        }
+// Start the real-time updates
+fetchTokenPrices();
+setInterval(fetchTokenPrices, 30000);
 
         // Update trade history UI
         function updateTradeHistory() {
