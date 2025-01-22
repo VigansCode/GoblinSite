@@ -1154,7 +1154,7 @@ const tokenIds = {
     '$PEPE': 'pepe',
     '$DOGE': 'dogecoin',
     '$SHIB': 'shiba-inu',
-    '$WOJAK': 'wojak',  // Note: If not available on CoinGecko, will fallback
+    '$WOJAK': 'wojak',
     '$BONK': 'bonk'
 };
 
@@ -1179,62 +1179,19 @@ async function fetchTokenPrices() {
                 };
             }
         });
-
-        // Update UI for selected token
-        if (tradingState.selectedToken && tokenPrices[tradingState.selectedToken]) {
-            updateTokenDisplay(tradingState.selectedToken);
-        }
     } catch (error) {
         console.error('Error fetching token prices:', error);
     }
 }
 
-// Update token display in the UI
-function updateTokenDisplay(token) {
-    const tokenData = tokenPrices[token];
-    if (tokenData) {
-        // Update the token button to show current price
-        const tokenButton = document.querySelector(`button[onclick="selectToken('${token}')"]`);
-        if (tokenButton) {
-            const priceDisplay = document.createElement('div');
-            priceDisplay.className = 'text-xs mt-1';
-            priceDisplay.textContent = `$${tokenData.price.toFixed(6)}`;
-            
-            // Remove old price display if exists
-            const oldPrice = tokenButton.querySelector('.text-xs');
-            if (oldPrice) {
-                oldPrice.remove();
-            }
-            
-            tokenButton.appendChild(priceDisplay);
-            
-            // Add price change indicator
-            const changeClass = tokenData.change24h >= 0 ? 'text-green-400' : 'text-red-400';
-            tokenButton.style.borderColor = tokenData.change24h >= 0 ? '#10B981' : '#EF4444';
-        }
-    }
-}
-
-// Modify existing selectToken function
-const originalSelectToken = selectToken;
-function selectToken(token) {
-    originalSelectToken(token);
-    if (tokenPrices[token]) {
-        updateTokenDisplay(token);
-    }
-}
-
 // Modify executeTrade function to use real price data
-const originalExecuteTrade = executeTrade;
 function executeTrade(direction) {
     const token = tradingState.selectedToken;
     const tokenData = tokenPrices[token];
+    const amount = parseFloat(document.getElementById('tradeAmount').value);
+    const risk = parseInt(document.getElementById('riskLevel').value);
     
     if (tokenData && tokenData.change24h) {
-        const amount = parseFloat(document.getElementById('tradeAmount').value);
-        const risk = parseInt(document.getElementById('riskLevel').value);
-        
-        // Calculate P&L based purely on real market data
         const profitLoss = direction === 'long' ? 
             amount * (tokenData.change24h / 100) : 
             amount * (-tokenData.change24h / 100);
@@ -1251,6 +1208,18 @@ function executeTrade(direction) {
         tradingState.trades.unshift(trade);
         tradingState.balance += parseFloat(profitLoss);
         
+        // Visual feedback
+        const btn = event.target;
+        const rect = btn.getBoundingClientRect();
+
+        const emoji = document.createElement('div');
+        emoji.className = 'float-emoji';
+        emoji.textContent = '✨';
+        emoji.style.left = rect.left + 'px';
+        emoji.style.top = rect.top + 'px';
+        document.body.appendChild(emoji);
+        setTimeout(() => emoji.remove(), 2000);
+
         updateTradeHistory();
         updateBalance();
         updateGoblinMood();
@@ -1259,7 +1228,6 @@ function executeTrade(direction) {
 
 // Start fetching price data
 fetchTokenPrices();
-// Update prices every 30 seconds
 setInterval(fetchTokenPrices, 30000);
 
     // Token selection function
