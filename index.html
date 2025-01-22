@@ -1146,7 +1146,7 @@ setInterval(updateTickerUI, 300000); // Update every 5 minutes
         trades: [],
         selectedToken: '$PEPE' // Default selected token
     };
-    
+
     // Add this to your existing JavaScript code
 
 // Token IDs for CoinGecko API
@@ -1230,19 +1230,15 @@ function executeTrade(direction) {
     const token = tradingState.selectedToken;
     const tokenData = tokenPrices[token];
     
-    if (tokenData) {
-        // Use real price movement for more realistic P&L
+    if (tokenData && tokenData.change24h) {
         const amount = parseFloat(document.getElementById('tradeAmount').value);
         const risk = parseInt(document.getElementById('riskLevel').value);
         
-        // Calculate P&L based on real 24h change and risk level
-        const volatilityMultiplier = risk / 50; // Higher risk = more volatile
-        const priceChange = tokenData.change24h * volatilityMultiplier;
+        // Calculate P&L based purely on real market data
         const profitLoss = direction === 'long' ? 
-            amount * (priceChange / 100) : 
-            amount * (-priceChange / 100);
+            amount * (tokenData.change24h / 100) : 
+            amount * (-tokenData.change24h / 100);
 
-        // Execute trade with real market data
         const trade = {
             direction: direction,
             amount: amount,
@@ -1258,8 +1254,6 @@ function executeTrade(direction) {
         updateTradeHistory();
         updateBalance();
         updateGoblinMood();
-    } else {
-        originalExecuteTrade(direction);
     }
 }
 
