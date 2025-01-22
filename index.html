@@ -1138,91 +1138,173 @@ document.addEventListener('DOMContentLoaded', () => {
 updateTickerUI();
 setInterval(updateTickerUI, 300000); // Update every 5 minutes
 
-    // Trading state
-    let tradingState = {
-        balance: 42069,
-        riskLevel: 50,
-        tradeAmount: 100,
-        trades: [],
-        selectedToken: '$PEPE' // Default selected token
-    };
-
-    // Token selection function
-    function selectToken(token) {
-        tradingState.selectedToken = token;
-        // Visual feedback could be added here
-    }
-
-        // Execute trade function
-        function executeTrade(direction) {
-            const amount = parseFloat(document.getElementById('tradeAmount').value);
-            const risk = parseInt(document.getElementById('riskLevel').value);
-            
-            // Generate a random profit/loss based on risk level
-            const profitLossPercent = (Math.random() - 0.5) * (risk / 25);
-            const profitLoss = amount * profitLossPercent;
-            
-// Create trade record with selected token
-const trade = {
-    direction: direction,
-    amount: amount,
-    profitLoss: profitLoss.toFixed(2),
-    timestamp: new Date(),
-    pair: tradingState.selectedToken // Use the selected token
+// Trading state with real market data
+let tradingState = {
+    balance: 42069,
+    riskLevel: 50,
+    tradeAmount: 100,
+    trades: [],
+    selectedToken: '$PEPE',
+    positions: [],
+    prices: {}
 };
 
-// Add visual effects for trade (ADD THIS NEW CODE HERE)
-const btn = event.target;
-const rect = btn.getBoundingClientRect();
+// Token configuration
+const tokens = {
+    '$PEPE': { id: 'pepe', emoji: '🐸' },
+    '$DOGE': { id: 'dogecoin', emoji: '🐕' },
+    '$SHIB': { id: 'shiba-inu', emoji: '🦊' },
+    '$WOJAK': { id: 'wojak-finance', emoji: '🐺' },
+    '$BONK': { id: 'bonk', emoji: '🦴' }
+};
 
-// Sparkle effect
-const emoji = document.createElement('div');
-emoji.className = 'float-emoji';
-emoji.textContent = '✨';
-emoji.style.left = rect.left + 'px';
-emoji.style.top = rect.top + 'px';
-document.body.appendChild(emoji);
-setTimeout(() => emoji.remove(), 2000);
-
-// Goblin emoji for profitable trades
-if(parseFloat(trade.profitLoss) > 0) {
-    const goblin = document.createElement('div');
-    goblin.className = 'float-emoji';
-    goblin.textContent = '👺';
-    goblin.style.left = (rect.left + 50) + 'px';
-    goblin.style.top = rect.top + 'px';
-    document.body.appendChild(goblin);
-    setTimeout(() => goblin.remove(), 2000);
+// Fetch current prices from CoinGecko
+async function fetchPrices() {
+    try {
+        const ids = Object.values(tokens).map(t => t.id).join(',');
+        const response = await fetch(
+            `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currency=usd&include_24hr_change=true`
+        );
+        const data = await response.json();
+        tradingState.prices = data;
+        updatePriceDisplay();
+    } catch (error) {
+        console.error('Error fetching prices:', error);
+    }
 }
 
-// Update trading state
-tradingState.trades.unshift(trade);
-            tradingState.balance += parseFloat(profitLoss);
-            
-            // Update UI
-            updateTradeHistory();
-            updateBalance();
-            updateGoblinMood();
-        }
-
-        // Update trade history UI
-        function updateTradeHistory() {
-            const tradeHistory = document.getElementById('tradeHistory');
-            tradeHistory.innerHTML = '';
-            
-            tradingState.trades.forEach(trade => {
-                const isProfitable = parseFloat(trade.profitLoss) >= 0;
-                const tradeEl = document.createElement('div');
-                tradeEl.className = `p-2 rounded ${isProfitable ? 'bg-green-900 trade-glow' : 'bg-red-900'} bg-opacity-30`;
-                
-                tradeEl.innerHTML = `
-                    <div class="flex justify-between items-center">
-                        <span>${trade.direction.toUpperCase()} ${trade.pair}</span>
-                        <span class="${isProfitable ? 'text-green-400' : 'text-red-400'}">
-                            ${isProfitable ? '+' : ''}${Math.abs(trade.profitLoss)}
-                        </span>
-                    </div>
+// Update UI with current prices
+function updatePriceDisplay() {
+    Object.entries(tokens).forEach(([symbol, token]) => {
+        const priceData = tradingState.prices[token.id];
+        if (priceData) {
+            // Find and update price display elements
+            const tokenButton = Array.from(document.querySelectorAll('button')).find(
+                btn => btn.textContent.includes(symbol)
+            );
+            if (tokenButton) {
+                const priceDisplay = document.createElement('div');
+                priceDisplay.className = 'text-sm mt-1';
+                priceDisplay.innerHTML = `
+                    $${priceData.usd.toFixed(6)}
+                    <br>
+                    <span class="${priceData.usd_24h_change >= 0 ? 'text-green-400' : 'text-red-400'}">
+                        ${priceData.usd_24h_change.toFixed(2)}%
+                    </span>
                 `;
+                
+                // Remove old price display if it exists
+                const oldPrice = tokenButton.querySelector('.text-sm');
+                if (oldPrice) oldPrice.remove();
+                
+                tokenButton.appendChild(priceDisplay);
+            }
+        }
+    });
+}
+
+// Token selection function
+function selectToken(token) {
+    tradingState.selectedToken = token;
+    // Update UI to show selected token
+    document.querySelectorAll('[onclick^="selectToken"]').forEach(btn => {
+        btn.classList.remove('bg-purple-700');
+        btn.classList.add('bg-purple-600');
+    });
+    const selectedButton = document.querySelector(`button[onclick="selectToken('${token}')"]`);
+    if (selectedButton) {
+        selectedButton.classList.remove('bg-purple-600');
+        selectedButton.classList.add('bg-purple-700');
+    }
+}
+
+function executeTrade(direction) {
+    const amount = parseFloat(document.getElementById('tradeAmount').value);
+    const risk = parseInt(document.getElementById('riskLevel').value);
+    const token = tradingState.selectedToken;
+    const tokenData = tokens[token];
+    
+    if (!tokenData || !tradingState.prices[tokenData.id]) {
+        console.error('No price data available');
+        return;
+    }
+    
+    const currentPrice = tradingState.prices[tokenData.id].usd;
+    const priceChange = tradingState.prices[tokenData.id].usd_24h_change / 100;
+    const leverage = risk / 25; // Higher risk = higher leverage
+    const positionSize = amount * leverage;
+    
+    // Calculate potential profit/loss based on real price movements
+    const estimatedPnL = direction === 'long' ? 
+        positionSize * priceChange : 
+        positionSize * -priceChange;
+    
+    // Create trade record
+    const trade = {
+        direction: direction,
+        token: token,
+        amount: amount,
+        leverage: leverage,
+        entryPrice: currentPrice,
+        estimatedPnL: estimatedPnL.toFixed(2),
+        timestamp: new Date()
+    };
+    
+    // Add visual effects
+    const btn = event.target;
+    const rect = btn.getBoundingClientRect();
+    
+    // Create floating emoji effects
+    const sparkle = document.createElement('div');
+    sparkle.className = 'float-emoji';
+    sparkle.textContent = '✨';
+    sparkle.style.left = rect.left + 'px';
+    sparkle.style.top = rect.top + 'px';
+    document.body.appendChild(sparkle);
+    setTimeout(() => sparkle.remove(), 2000);
+    
+    // Goblin emoji for profitable trades
+    if(parseFloat(trade.estimatedPnL) > 0) {
+        const goblin = document.createElement('div');
+        goblin.className = 'float-emoji';
+        goblin.textContent = '👺';
+        goblin.style.left = (rect.left + 50) + 'px';
+        goblin.style.top = rect.top + 'px';
+        document.body.appendChild(goblin);
+        setTimeout(() => goblin.remove(), 2000);
+    }
+    
+    // Update trading state
+    tradingState.trades.unshift(trade);
+    tradingState.balance += parseFloat(trade.estimatedPnL);
+    
+    // Update UI
+    updateTradeHistory();
+    updateBalance();
+    updateGoblinMood();
+}
+
+function updateTradeHistory() {
+    const tradeHistory = document.getElementById('tradeHistory');
+    tradeHistory.innerHTML = '';
+    
+    tradingState.trades.forEach(trade => {
+        const isProfitable = parseFloat(trade.estimatedPnL) >= 0;
+        const tradeEl = document.createElement('div');
+        tradeEl.className = `p-2 rounded ${isProfitable ? 'bg-green-900 trade-glow' : 'bg-red-900'} bg-opacity-30`;
+        
+        tradeEl.innerHTML = `
+            <div class="flex justify-between items-center">
+                <div>
+                    <span>${trade.direction.toUpperCase()} ${trade.token}</span>
+                    <br>
+                    <span class="text-sm opacity-75">Entry: $${trade.entryPrice.toFixed(6)}</span>
+                </div>
+                <span class="${isProfitable ? 'text-green-400' : 'text-red-400'}">
+                    ${isProfitable ? '+' : ''}${trade.estimatedPnL} USD
+                </span>
+            </div>
+        `;
                 
                 tradeHistory.appendChild(tradeEl);
             });
@@ -1595,6 +1677,15 @@ function typeWriter(text, elementId, speed = 50) {
     // Start typing
     type();
 }
+
+// Add new price fetching initialization right here
+document.addEventListener('DOMContentLoaded', () => {
+    // Initial price fetch
+    fetchPrices();
+    
+    // Update prices every 30 seconds
+    setInterval(fetchPrices, 30000);
+});
 
 let currentAudio = null;
 
