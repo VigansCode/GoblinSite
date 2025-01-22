@@ -472,10 +472,10 @@
         </div>
         <div class="flex flex-col items-end gap-4">
             <button id="wallet-connect-btn" 
-                    onclick="connectWallet()" 
-                    class="button-primary px-4 py-2 rounded-lg">
-                Connect Wallet
-            </button>
+            onclick="connectWallet()" 
+            class="button-primary px-4 py-2 rounded-lg">
+        Connect Wallet
+    </button>
             <div>
                 <p class="text-sm text-purple-300">24h Trading Volume</p>
                 <p class="text-2xl font-bold text-green-400" id="tradingVolume">Not Connected</p>
@@ -1758,69 +1758,68 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(updateWalletAnalytics, 30000);
 });
 
+// Put this at the top with your other global variables
+let solanaConnection = null;
+
 async function connectWallet() {
+    const solBalanceEl = document.getElementById('solBalance');
+    const totalTradesEl = document.getElementById('totalTrades');
+    const tradingVolumeEl = document.getElementById('tradingVolume');
+    const connectBtn = document.getElementById('wallet-connect-btn');
+
     try {
-        // First check if Phantom exists
         const { solana } = window;
         if (!solana?.isPhantom) {
-            alert('Please install Phantom wallet!');
+            alert('Please install Phantom wallet');
             return;
         }
 
-        // Get button and show connecting state
-        const connectBtn = document.getElementById('wallet-connect-btn');
-        connectBtn.textContent = 'Connecting...';
-        connectBtn.disabled = true;
+        connectBtn.innerText = 'Connecting...';
 
-        // Connect to Phantom
-        const response = await solana.connect();
-        const connection = new window.solanaWeb3.Connection(
+        // Connect
+        const resp = await solana.connect();
+        solanaConnection = new window.solanaWeb3.Connection(
             window.solanaWeb3.clusterApiUrl('mainnet-beta')
         );
-        
-        // Get balance
-        const balance = await connection.getBalance(response.publicKey);
-        const solBalance = (balance / window.solanaWeb3.LAMPORTS_PER_SOL).toFixed(2);
-        
-        // Get transactions
-        const transactions = await connection.getSignaturesForAddress(response.publicKey);
-        
-        // Update UI
-        document.getElementById('solBalance').textContent = `${solBalance} SOL`;
-        document.getElementById('totalTrades').textContent = transactions.length;
-        document.getElementById('tradingVolume').textContent = `${transactions.length} txs`;
 
-        // Update button to disconnect
-        connectBtn.textContent = 'Disconnect';
-        connectBtn.disabled = false;
+        // Get data
+        const balance = await solanaConnection.getBalance(resp.publicKey);
+        const solBalance = (balance / window.solanaWeb3.LAMPORTS_PER_SOL).toFixed(2);
+
+        // Update UI
+        solBalanceEl.textContent = `${solBalance} SOL`;
+        totalTradesEl.textContent = 'Connected';
+        tradingVolumeEl.textContent = 'Connected';
+        connectBtn.innerText = 'Disconnect';
         connectBtn.onclick = disconnectWallet;
 
     } catch (error) {
-        console.error('Wallet connection error:', error);
-        document.getElementById('solBalance').textContent = 'Error';
-        document.getElementById('totalTrades').textContent = 'Error';
-        document.getElementById('tradingVolume').textContent = 'Error';
-        const connectBtn = document.getElementById('wallet-connect-btn');
-        connectBtn.textContent = 'Connect Wallet';
-        connectBtn.disabled = false;
+        console.error(error);
+        solBalanceEl.textContent = 'Error';
+        totalTradesEl.textContent = 'Error';
+        tradingVolumeEl.textContent = 'Error';
+        connectBtn.innerText = 'Connect Wallet';
     }
 }
 
 async function disconnectWallet() {
+    const connectBtn = document.getElementById('wallet-connect-btn');
+    const solBalanceEl = document.getElementById('solBalance');
+    const totalTradesEl = document.getElementById('totalTrades');
+    const tradingVolumeEl = document.getElementById('tradingVolume');
+
     try {
         await window.solana?.disconnect();
+        solanaConnection = null;
+
+        solBalanceEl.textContent = 'Not Connected';
+        totalTradesEl.textContent = 'Not Connected';
+        tradingVolumeEl.textContent = 'Not Connected';
         
-        // Reset UI
-        document.getElementById('solBalance').textContent = 'Not Connected';
-        document.getElementById('totalTrades').textContent = 'Not Connected';
-        document.getElementById('tradingVolume').textContent = 'Not Connected';
-        
-        // Reset button
-        const connectBtn = document.getElementById('wallet-connect-btn');
-        connectBtn.textContent = 'Connect Wallet';
+        connectBtn.innerText = 'Connect Wallet';
         connectBtn.onclick = connectWallet;
     } catch (error) {
-        console.error('Error disconnecting:', error);
+        console.error(error);
     }
 }
 
