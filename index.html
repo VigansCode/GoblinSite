@@ -9,66 +9,12 @@
     <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
     <script src="https://cdn.ably.io/lib/ably.min-1.js"></script>
     <style>
-body {
-    background-color: #0a0614;
-    position: relative;
-    overflow-x: hidden;
-    color: white;
-}
-
-.loading {
-    /* Improve gradient for smoother animation */
-    background: linear-gradient(
-        90deg,
-        #2D1B69 0%,
-        #3D2A79 25%,
-        #2D1B69 50%,
-        #3D2A79 75%,
-        #2D1B69 100%
-    );
-    /* Make animation smoother with larger background */
-    background-size: 400% 100%;
-    /* Add better timing function for smoother movement */
-    animation: loading 2s ease-in-out infinite;
-}
-
-@keyframes loading {
-    0% {
-        background-position: 0% 50%;
-    }
-    50% {
-        background-position: 100% 50%;
-    }
-    100% {
-        background-position: 0% 50%;
-    }
-}
-
-/* Add shine effect */
-.loading::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(
-        90deg,
-        transparent,
-        rgba(255, 255, 255, 0.1),
-        transparent
-    );
-    animation: shine 1.5s infinite;
-}
-
-@keyframes shine {
-    0% {
-        transform: translateX(-100%);
-    }
-    100% {
-        transform: translateX(100%);
-    }
-}       
+        body {
+            background-color: #0a0614;
+            position: relative;
+            overflow-x: hidden;
+            color: white;
+        }
 
 @keyframes blink {
     0%, 100% { opacity: 1; }
@@ -412,8 +358,8 @@ body {
 </head>
 <body>
     <canvas id="neuralgrid"></canvas>
-<!-- Live Ticker Header -->
-<div class="fixed top-0 left-0 right-0 bg-gray-900 bg-opacity-90 backdrop-blur-sm border-b border-purple-500 z-50">
+    <!-- Live Ticker Header -->
+    <div class="fixed top-0 left-0 right-0 bg-gray-900 bg-opacity-90 backdrop-blur-sm border-b border-purple-500 z-50">
         <div class="w-full py-3"> <!-- Removed container class to allow full width -->
             <div class="ticker-wrapper">
                 <div id="meme-ticker" class="ticker-content">
@@ -1142,7 +1088,7 @@ function animate() {
 // Start animation
 animate();
 
-function updateTickerUI() {
+async function updateTickerUI() {
     const tickerContainer = document.getElementById('meme-ticker');
     tickerContainer.classList.remove('animated'); // Remove animation class
     
