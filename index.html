@@ -1732,56 +1732,60 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(updateWalletAnalytics, 30000);
 });
 
-// Initialize the connection once
-const solanaConnection = new solanaWeb3.Connection('https://api.mainnet-beta.solana.com', 'confirmed');
+// Initialize web3 connection
+const solanaConnection = new solanaWeb3.Connection('https://api.mainnet-beta.solana.com');
 
 async function getWalletAnalytics(address) {
-    try {
-        // Get elements and show loading states
-        const solBalanceEl = document.getElementById('solBalance');
-        const totalTradesEl = document.getElementById('totalTrades');
-        const tradingVolumeEl = document.getElementById('tradingVolume');
-        const currentBalanceEl = document.getElementById('balance');
-        
-        [solBalanceEl, totalTradesEl, tradingVolumeEl, currentBalanceEl].forEach(el => {
-            el.innerHTML = '<span class="animate-pulse">Loading...</span>';
-        });
+    const elements = {
+        solBalance: document.getElementById('solBalance'),
+        totalTrades: document.getElementById('totalTrades'),
+        tradingVolume: document.getElementById('tradingVolume'),
+        currentBalance: document.getElementById('balance')
+    };
 
-        // Get SOL balance
+    // Show loading state
+    Object.values(elements).forEach(el => {
+        if (el) el.innerHTML = '<span class="animate-pulse">Loading...</span>';
+    });
+
+    try {
+        // Validate and get public key
         const publicKey = new solanaWeb3.PublicKey(address);
         const balance = await solanaConnection.getBalance(publicKey);
-        const solBalance = balance / 1e9; // Convert lamports to SOL
+        const solBalance = balance / 1e9;
 
         // Get SOL price from DexScreener
         const response = await fetch('https://api.dexscreener.com/latest/dex/tokens/solana/SOL');
         const data = await response.json();
         const solPair = data.pairs[0];
-        
-        // Calculate USD value
         const usdBalance = solBalance * parseFloat(solPair.priceUsd);
 
-        // Update UI
-        solBalanceEl.textContent = `${solBalance.toFixed(5)} SOL`;
-        currentBalanceEl.textContent = `$${usdBalance.toFixed(2)}`;
-        totalTradesEl.textContent = 'Connected';
-        tradingVolumeEl.textContent = `$${(solPair.volume.h24 / 1000000).toFixed(2)}M`;
+        // Update UI with live data
+        if (elements.solBalance) elements.solBalance.textContent = `${solBalance.toFixed(5)} SOL`;
+        if (elements.currentBalance) elements.currentBalance.textContent = `$${usdBalance.toFixed(2)}`;
+        if (elements.totalTrades) elements.totalTrades.textContent = 'Connected';
+        if (elements.tradingVolume) elements.tradingVolume.textContent = `$${(solPair.volume.h24 / 1000000).toFixed(2)}M`;
 
     } catch (error) {
-        console.error('Error:', error);
-        solBalanceEl.textContent = 'Invalid Address';
-        currentBalanceEl.textContent = '$0.00';
-        totalTradesEl.textContent = '0';
-        tradingVolumeEl.textContent = '$0.00';
+        console.error('Wallet tracking error:', error);
+        // Reset UI to error state
+        if (elements.solBalance) elements.solBalance.textContent = 'Invalid Address';
+        if (elements.currentBalance) elements.currentBalance.textContent = '$0.00';
+        if (elements.totalTrades) elements.totalTrades.textContent = '0';
+        if (elements.tradingVolume) elements.tradingVolume.textContent = '$0.00';
     }
 }
 
-// Replace onclick handler with this
-document.getElementById('wallet-connect-btn').onclick = () => {
-    const address = prompt('Enter wallet address to track:');
-    if (address?.trim()) {
-        getWalletAnalytics(address.trim());
-    }
-};
+// Wallet tracking button handler
+const walletBtn = document.getElementById('wallet-connect-btn');
+if (walletBtn) {
+    walletBtn.onclick = async () => {
+        const address = prompt('Enter wallet address to track:');
+        if (address?.trim()) {
+            await getWalletAnalytics(address.trim());
+        }
+    };
+}
 
 // Keep the existing voice agents code and event listeners
 function initializeVoiceAgents() {
