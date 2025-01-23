@@ -1738,38 +1738,38 @@ let solanaConnection = null;
 async function getWalletAnalytics(address) {
     const elements = {
         solBalance: document.getElementById('solBalance'),
+        currentBalance: document.getElementById('balance'),
         totalTrades: document.getElementById('totalTrades'),
-        tradingVolume: document.getElementById('tradingVolume'),
-        currentBalance: document.getElementById('balance')
+        tradingVolume: document.getElementById('tradingVolume')
     };
 
     try {
-        // Show loading state
+        // Show loading states
         Object.values(elements).forEach(el => {
             el.innerHTML = '<span class="animate-pulse">Loading...</span>';
         });
 
-        // Initialize Solana connection if needed
+        // Initialize Solana connection
         if (!solanaConnection) {
             solanaConnection = new solanaWeb3.Connection('https://api.mainnet-beta.solana.com', 'confirmed');
         }
 
-        // Get SOL balance
+        // Get wallet public key and SOL balance
         const publicKey = new solanaWeb3.PublicKey(address);
         const balance = await solanaConnection.getBalance(publicKey);
-        const solBalance = balance / 1e9;
+        const solBalance = balance / 1e9; // Convert lamports to SOL
 
         // Get SOL price
         const solResponse = await fetch('https://api.dexscreener.com/latest/dex/tokens/solana/SOL');
         const solData = await solResponse.json();
-        const solPair = solData.pairs[0];
-        const usdBalance = solBalance * parseFloat(solPair.priceUsd);
+        const solPrice = parseFloat(solData.pairs[0].priceUsd);
+        const usdBalance = solBalance * solPrice;
 
-        // Update UI
-        elements.solBalance.textContent = `${solBalance.toFixed(2)} SOL`;
+        // Update UI with precise values
+        elements.solBalance.textContent = `${solBalance.toFixed(5)} SOL`;
         elements.currentBalance.textContent = `$${usdBalance.toFixed(2)}`;
-        elements.tradingVolume.textContent = `$${(solPair.volume.h24 / 1000000).toFixed(2)}M`;
         elements.totalTrades.textContent = 'Connected';
+        elements.tradingVolume.textContent = `$${(solData.pairs[0].volume.h24 / 1000000).toFixed(2)}M`;
 
     } catch (error) {
         console.error('Error:', error);
