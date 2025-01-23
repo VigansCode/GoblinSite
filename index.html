@@ -1733,75 +1733,57 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Initialize connection
-const solanaConnection = new solanaWeb3.Connection('https://api.mainnet-beta.solana.com');
-const TOKEN_PROGRAM_ID = new solanaWeb3.PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA');
+let solanaConnection = null;
 
 async function getWalletAnalytics(address) {
     const elements = {
         solBalance: document.getElementById('solBalance'),
+        currentBalance: document.getElementById('balance'),
         totalTrades: document.getElementById('totalTrades'),
-        tradingVolume: document.getElementById('tradingVolume'),
-        currentBalance: document.getElementById('balance')
+        tradingVolume: document.getElementById('tradingVolume')
     };
 
-    Object.values(elements).forEach(el => {
-        if (el) el.innerHTML = '<span class="animate-pulse">Loading...</span>';
-    });
-
     try {
+        // Initialize connection if needed
+        if (!solanaConnection) {
+            solanaConnection = new solanaWeb3.Connection('https://api.mainnet-beta.solana.com');
+        }
+
+        // Get wallet SOL balance
         const publicKey = new solanaWeb3.PublicKey(address);
-        
-        // Get native SOL balance
-        const balance = await solanaConnection.getBalance(publicKey);
-        const solBalance = balance / 1e9;
+        const lamports = await solanaConnection.getBalance(publicKey);
+        const solBalance = lamports / 1e9;
 
-        // Get token accounts
-        const tokenAccounts = await solanaConnection.getParsedTokenAccountsByOwner(publicKey, {
-            programId: TOKEN_PROGRAM_ID
-        });
-
-        // Get SOL price
+        // Get SOL/USD price
         const solResponse = await fetch('https://api.dexscreener.com/latest/dex/tokens/solana/SOL');
-        const solData = await response.json();
+        const solData = await solResponse.json();
         const solPrice = parseFloat(solData.pairs[0].priceUsd);
+
+        // Calculate USD value
         const usdBalance = solBalance * solPrice;
 
-        // Count non-zero token balances
-        const activeTokens = tokenAccounts.value.filter(acc => 
-            acc.account.data.parsed.info.tokenAmount.uiAmount > 0
-        ).length;
-
         // Update UI
-        if (elements.solBalance) elements.solBalance.textContent = `${solBalance.toFixed(5)} SOL`;
-        if (elements.currentBalance) elements.currentBalance.textContent = `$${usdBalance.toFixed(2)}`;
-        if (elements.totalTrades) elements.totalTrades.textContent = `${activeTokens} Tokens`;
-        if (elements.tradingVolume) elements.tradingVolume.textContent = `$${(solData.pairs[0].volume.h24 / 1000000).toFixed(2)}M`;
-
-        // Log token details for debugging
-        console.log('Token holdings:', tokenAccounts.value.map(acc => ({
-            mint: acc.account.data.parsed.info.mint,
-            amount: acc.account.data.parsed.info.tokenAmount.uiAmount,
-            decimals: acc.account.data.parsed.info.tokenAmount.decimals
-        })));
+        elements.solBalance.textContent = `${solBalance.toFixed(5)} SOL`;
+        elements.currentBalance.textContent = `$${usdBalance.toFixed(2)}`;
+        elements.totalTrades.textContent = 'Connected';
+        elements.tradingVolume.textContent = `$${(solData.pairs[0].volume.h24 / 1e6).toFixed(2)}M`;
 
     } catch (error) {
         console.error('Error:', error);
-        Object.values(elements).forEach(el => {
-            if (el) el.textContent = 'Error';
-        });
+        elements.solBalance.textContent = 'Error';
+        elements.currentBalance.textContent = 'Error';
+        elements.totalTrades.textContent = 'Error';
+        elements.tradingVolume.textContent = 'Error';
     }
 }
 
-// Track wallet button handler
-const walletBtn = document.getElementById('wallet-connect-btn');
-if (walletBtn) {
-    walletBtn.onclick = async () => {
-        const address = prompt('Enter wallet address to track:');
-        if (address?.trim()) {
-            await getWalletAnalytics(address.trim());
-        }
-    };
-}
+// Click handler
+document.getElementById('wallet-connect-btn').onclick = () => {
+    const address = prompt('Enter wallet address to track:');
+    if (address?.trim()) {
+        getWalletAnalytics(address.trim());
+    }
+};
 
 // Keep the existing voice agents code and event listeners
 function initializeVoiceAgents() {
