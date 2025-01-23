@@ -1732,8 +1732,11 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(updateWalletAnalytics, 30000);
 });
 
-// Put this at the top with your other global variables
-let solanaConnection = null;
+// Initialize Solana connection globally
+const solanaConnection = new solanaWeb3.Connection(
+    'https://api.mainnet-beta.solana.com',
+    'confirmed'
+);
 
 async function getWalletAnalytics(address) {
     try {
@@ -1743,37 +1746,45 @@ async function getWalletAnalytics(address) {
         const currentBalanceEl = document.getElementById('balance');
         
         // Show loading states
-        solBalanceEl.innerHTML = '<span class="animate-pulse">Loading...</span>';
-        totalTradesEl.innerHTML = '<span class="animate-pulse">Loading...</span>';
-        tradingVolumeEl.innerHTML = '<span class="animate-pulse">Loading...</span>';
-        currentBalanceEl.innerHTML = '<span class="animate-pulse">Loading...</span>';
+        const loadingHTML = '<span class="animate-pulse">Loading...</span>';
+        [solBalanceEl, totalTradesEl, tradingVolumeEl, currentBalanceEl].forEach(el => {
+            el.innerHTML = loadingHTML;
+        });
 
-        // Initialize Solana connection
-        const connection = new solanaWeb3.Connection('https://api.mainnet-beta.solana.com');
-        
-        // Get wallet's SOL balance
-        const publicKey = new solanaWeb3.PublicKey(address);
-        const balance = await connection.getBalance(publicKey);
-        const solBalance = balance / 1e9; // Convert lamports to SOL
+        try {
+            // Get wallet's SOL balance
+            const publicKey = new solanaWeb3.PublicKey(address);
+            const balance = await solanaConnection.getBalance(publicKey);
+            const solBalance = balance / 1e9; // Convert lamports to SOL
 
-        // Get SOL price and volume from DexScreener
-        const solResponse = await fetch('https://api.dexscreener.com/latest/dex/tokens/solana/SOL');
-        const solData = await solResponse.json();
-        const solPair = solData.pairs[0];
-        
-        // Calculate USD value
-        const usdBalance = solBalance * parseFloat(solPair.priceUsd);
+            // Get SOL price from DexScreener
+            const solResponse = await fetch('https://api.dexscreener.com/latest/dex/tokens/solana/SOL');
+            const solData = await solResponse.json();
+            const solPair = solData.pairs[0];
+            
+            // Calculate USD value
+            const usdBalance = solBalance * parseFloat(solPair.priceUsd);
 
-        // Get trading data
-        const dexResponse = await fetch(`https://api.dexscreener.com/latest/dex/search?q=${address}`);
-        const dexData = await dexResponse.json();
-        const totalTrades = dexData.pairs ? dexData.pairs.reduce((acc, pair) => acc + (pair.txns?.h24 || 0), 0) : 0;
+            // Update UI with balance info
+            solBalanceEl.textContent = `${solBalance.toFixed(2)} SOL`;
+            currentBalanceEl.textContent = `$${usdBalance.toFixed(2)}`;
+            
+            // Get trading activity
+            const dexResponse = await fetch(`https://api.dexscreener.com/latest/dex/search?q=${address}`);
+            const dexData = await dexResponse.json();
+            
+            if (dexData.pairs && dexData.pairs.length > 0) {
+                const totalTrades = dexData.pairs.reduce((acc, pair) => acc + (pair.txns?.h24 || 0), 0);
+                totalTradesEl.textContent = totalTrades.toString();
+                tradingVolumeEl.textContent = `$${(solPair.volume.h24 / 1000000).toFixed(2)}M`;
+            } else {
+                totalTradesEl.textContent = 'No trades';
+                tradingVolumeEl.textContent = 'No volume';
+            }
 
-        // Update UI
-        solBalanceEl.textContent = `${solBalance.toFixed(2)} SOL`;
-        currentBalanceEl.textContent = `$${usdBalance.toFixed(2)}`;
-        totalTradesEl.textContent = totalTrades.toString();
-        tradingVolumeEl.textContent = `$${(solPair.volume.h24 / 1000000).toFixed(2)}M`;
+        } catch (error) {
+            throw new Error('Invalid wallet address');
+        }
 
     } catch (error) {
         console.error('Error fetching wallet data:', error);
@@ -1784,6 +1795,7 @@ async function getWalletAnalytics(address) {
     }
 }
 
+// Update onclick handler
 document.getElementById('wallet-connect-btn').onclick = () => {
     const address = prompt('Enter wallet address to track:');
     if (address) {
