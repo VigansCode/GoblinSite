@@ -1732,21 +1732,20 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(updateWalletAnalytics, 30000);
 });
 
-// Create a persistent connection
+// Connect to Solana mainnet
 const connection = new solanaWeb3.Connection('https://api.mainnet-beta.solana.com');
 
 async function getWalletAnalytics(address) {
+    // Get UI elements
     const solBalanceEl = document.getElementById('solBalance');
+    const currentBalanceEl = document.getElementById('balance');
     const totalTradesEl = document.getElementById('totalTrades');
     const tradingVolumeEl = document.getElementById('tradingVolume');
-    const currentBalanceEl = document.getElementById('balance');
 
     try {
-        // Reset previous values
+        // Show loading state
         solBalanceEl.textContent = 'Loading...';
         currentBalanceEl.textContent = 'Loading...';
-        totalTradesEl.textContent = 'Loading...';
-        tradingVolumeEl.textContent = 'Loading...';
 
         // Get SOL balance
         const publicKey = new solanaWeb3.PublicKey(address);
@@ -1762,23 +1761,30 @@ async function getWalletAnalytics(address) {
         const usdValue = solBalance * solPrice;
 
         // Update UI
-        solBalanceEl.textContent = `${solBalance.toFixed(2)} SOL`;
+        solBalanceEl.textContent = `${solBalance.toFixed(4)} SOL`;
         currentBalanceEl.textContent = `$${usdValue.toFixed(2)}`;
         totalTradesEl.textContent = 'Connected';
-        tradingVolumeEl.textContent = `$${(data.pairs[0].volume.h24/1000000).toFixed(2)}M`;
+        tradingVolumeEl.textContent = data.pairs[0].volume.h24;
 
     } catch (error) {
         console.error('Error:', error);
-        solBalanceEl.textContent = 'Error';
+        solBalanceEl.textContent = 'Invalid Address';
         currentBalanceEl.textContent = '$0.00';
-        totalTradesEl.textContent = 'Error';
-        tradingVolumeEl.textContent = 'Error';
+        totalTradesEl.textContent = '0';
+        tradingVolumeEl.textContent = '$0';
     }
 }
 
-// Update wallet connect button handler
 document.getElementById('wallet-connect-btn').onclick = () => {
-    const address = prompt('Enter Solana wallet address:');
+    const address = prompt('Enter wallet address:');
+    if (address) {
+        getWalletAnalytics(address.trim());
+    }
+};
+
+// Click handler
+document.getElementById('wallet-connect-btn').onclick = () => {
+    const address = prompt('Enter wallet address to track:');
     if (address?.trim()) {
         getWalletAnalytics(address.trim());
     }
