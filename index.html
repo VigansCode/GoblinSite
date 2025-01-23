@@ -1732,8 +1732,9 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(updateWalletAnalytics, 30000);
 });
 
-// Initialize web3 connection
+// Initialize connection
 const solanaConnection = new solanaWeb3.Connection('https://api.mainnet-beta.solana.com');
+const TOKEN_PROGRAM_ID = new solanaWeb3.PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA');
 
 async function getWalletAnalytics(address) {
     const elements = {
@@ -1743,40 +1744,55 @@ async function getWalletAnalytics(address) {
         currentBalance: document.getElementById('balance')
     };
 
-    // Show loading state
     Object.values(elements).forEach(el => {
         if (el) el.innerHTML = '<span class="animate-pulse">Loading...</span>';
     });
 
     try {
-        // Validate and get public key
         const publicKey = new solanaWeb3.PublicKey(address);
+        
+        // Get native SOL balance
         const balance = await solanaConnection.getBalance(publicKey);
         const solBalance = balance / 1e9;
 
-        // Get SOL price from DexScreener
-        const response = await fetch('https://api.dexscreener.com/latest/dex/tokens/solana/SOL');
-        const data = await response.json();
-        const solPair = data.pairs[0];
-        const usdBalance = solBalance * parseFloat(solPair.priceUsd);
+        // Get token accounts
+        const tokenAccounts = await solanaConnection.getParsedTokenAccountsByOwner(publicKey, {
+            programId: TOKEN_PROGRAM_ID
+        });
 
-        // Update UI with live data
+        // Get SOL price
+        const solResponse = await fetch('https://api.dexscreener.com/latest/dex/tokens/solana/SOL');
+        const solData = await response.json();
+        const solPrice = parseFloat(solData.pairs[0].priceUsd);
+        const usdBalance = solBalance * solPrice;
+
+        // Count non-zero token balances
+        const activeTokens = tokenAccounts.value.filter(acc => 
+            acc.account.data.parsed.info.tokenAmount.uiAmount > 0
+        ).length;
+
+        // Update UI
         if (elements.solBalance) elements.solBalance.textContent = `${solBalance.toFixed(5)} SOL`;
         if (elements.currentBalance) elements.currentBalance.textContent = `$${usdBalance.toFixed(2)}`;
-        if (elements.totalTrades) elements.totalTrades.textContent = 'Connected';
-        if (elements.tradingVolume) elements.tradingVolume.textContent = `$${(solPair.volume.h24 / 1000000).toFixed(2)}M`;
+        if (elements.totalTrades) elements.totalTrades.textContent = `${activeTokens} Tokens`;
+        if (elements.tradingVolume) elements.tradingVolume.textContent = `$${(solData.pairs[0].volume.h24 / 1000000).toFixed(2)}M`;
+
+        // Log token details for debugging
+        console.log('Token holdings:', tokenAccounts.value.map(acc => ({
+            mint: acc.account.data.parsed.info.mint,
+            amount: acc.account.data.parsed.info.tokenAmount.uiAmount,
+            decimals: acc.account.data.parsed.info.tokenAmount.decimals
+        })));
 
     } catch (error) {
-        console.error('Wallet tracking error:', error);
-        // Reset UI to error state
-        if (elements.solBalance) elements.solBalance.textContent = 'Invalid Address';
-        if (elements.currentBalance) elements.currentBalance.textContent = '$0.00';
-        if (elements.totalTrades) elements.totalTrades.textContent = '0';
-        if (elements.tradingVolume) elements.tradingVolume.textContent = '$0.00';
+        console.error('Error:', error);
+        Object.values(elements).forEach(el => {
+            if (el) el.textContent = 'Error';
+        });
     }
 }
 
-// Wallet tracking button handler
+// Track wallet button handler
 const walletBtn = document.getElementById('wallet-connect-btn');
 if (walletBtn) {
     walletBtn.onclick = async () => {
