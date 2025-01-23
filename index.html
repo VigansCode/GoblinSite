@@ -1736,25 +1736,22 @@ document.addEventListener('DOMContentLoaded', () => {
 let solanaConnection = null;
 
 async function getWalletAnalytics(address) {
-    try {
-        const elements = {
-            solBalance: document.getElementById('solBalance'),
-            totalTrades: document.getElementById('totalTrades'),
-            tradingVolume: document.getElementById('tradingVolume'),
-            currentBalance: document.getElementById('balance')
-        };
+    const elements = {
+        solBalance: document.getElementById('solBalance'),
+        totalTrades: document.getElementById('totalTrades'),
+        tradingVolume: document.getElementById('tradingVolume'),
+        currentBalance: document.getElementById('balance')
+    };
 
+    try {
         // Show loading state
         Object.values(elements).forEach(el => {
             el.innerHTML = '<span class="animate-pulse">Loading...</span>';
         });
 
-        // Initialize Solana connection if not exists
+        // Initialize Solana connection if needed
         if (!solanaConnection) {
-            solanaConnection = new solanaWeb3.Connection(
-                'https://api.mainnet-beta.solana.com',
-                'confirmed'
-            );
+            solanaConnection = new solanaWeb3.Connection('https://api.mainnet-beta.solana.com', 'confirmed');
         }
 
         // Get SOL balance
@@ -1771,21 +1768,23 @@ async function getWalletAnalytics(address) {
         // Update UI
         elements.solBalance.textContent = `${solBalance.toFixed(2)} SOL`;
         elements.currentBalance.textContent = `$${usdBalance.toFixed(2)}`;
-        elements.totalTrades.textContent = await getTotalTrades(address) || 'No trades';
         elements.tradingVolume.textContent = `$${(solPair.volume.h24 / 1000000).toFixed(2)}M`;
+        elements.totalTrades.textContent = 'Connected';
 
     } catch (error) {
         console.error('Error:', error);
-        const errorValues = ['Invalid Address', '0', '$0.00', '$0.00'];
-        Object.values(elements).forEach((el, i) => el.textContent = errorValues[i]);
+        elements.solBalance.textContent = 'Invalid Address';
+        elements.currentBalance.textContent = '$0.00';
+        elements.totalTrades.textContent = '0';
+        elements.tradingVolume.textContent = '$0.00';
     }
 }
 
-// Initialize click handler
-document.getElementById('wallet-connect-btn').onclick = async () => {
+// Track wallet handler
+document.getElementById('wallet-connect-btn').onclick = () => {
     const address = prompt('Enter wallet address to track:');
     if (address?.trim()) {
-        await getWalletAnalytics(address.trim());
+        getWalletAnalytics(address.trim());
     }
 };
 
