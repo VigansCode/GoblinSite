@@ -1732,27 +1732,31 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(updateWalletAnalytics, 30000);
 });
 
-// Connect to Solana mainnet
-const connection = new solanaWeb3.Connection('https://api.mainnet-beta.solana.com');
-
 async function getWalletAnalytics(address) {
-    // Get UI elements
     const solBalanceEl = document.getElementById('solBalance');
-    const currentBalanceEl = document.getElementById('balance');
     const totalTradesEl = document.getElementById('totalTrades');
     const tradingVolumeEl = document.getElementById('tradingVolume');
+    const currentBalanceEl = document.getElementById('balance');
 
     try {
+        // Validate address format
+        if (!address.match(/^[1-9A-HJ-NP-Za-km-z]{32,44}$/)) {
+            throw new Error('Invalid Solana address format');
+        }
+
         // Show loading state
         solBalanceEl.textContent = 'Loading...';
         currentBalanceEl.textContent = 'Loading...';
+        
+        // Initialize connection and public key
+        const connection = new solanaWeb3.Connection('https://api.mainnet-beta.solana.com', 'confirmed');
+        const publicKey = new solanaWeb3.PublicKey(address);
 
         // Get SOL balance
-        const publicKey = new solanaWeb3.PublicKey(address);
-        const lamports = await connection.getBalance(publicKey);
-        const solBalance = lamports / solanaWeb3.LAMPORTS_PER_SOL;
+        const balance = await connection.getBalance(publicKey);
+        const solBalance = balance / solanaWeb3.LAMPORTS_PER_SOL;
 
-        // Get SOL price
+        // Get SOL price from Dexscreener
         const response = await fetch('https://api.dexscreener.com/latest/dex/tokens/solana/SOL');
         const data = await response.json();
         const solPrice = parseFloat(data.pairs[0].priceUsd);
@@ -1760,31 +1764,30 @@ async function getWalletAnalytics(address) {
         // Calculate USD value
         const usdValue = solBalance * solPrice;
 
+        // Get recent transactions
+        const transactions = await connection.getConfirmedSignaturesForAddress2(
+            publicKey, 
+            { limit: 100 }
+        );
+
         // Update UI
         solBalanceEl.textContent = `${solBalance.toFixed(4)} SOL`;
         currentBalanceEl.textContent = `$${usdValue.toFixed(2)}`;
-        totalTradesEl.textContent = 'Connected';
-        tradingVolumeEl.textContent = data.pairs[0].volume.h24;
+        totalTradesEl.textContent = transactions.length;
+        tradingVolumeEl.textContent = `$${(data.pairs[0].volume.h24/1000000).toFixed(2)}M`;
 
     } catch (error) {
-        console.error('Error:', error);
-        solBalanceEl.textContent = 'Invalid Address';
+        console.error('Wallet analytics error:', error);
+        solBalanceEl.textContent = 'Error';
         currentBalanceEl.textContent = '$0.00';
-        totalTradesEl.textContent = '0';
-        tradingVolumeEl.textContent = '$0';
+        totalTradesEl.textContent = 'Error';
+        tradingVolumeEl.textContent = 'Error';
     }
 }
 
+// Update wallet connect button handler
 document.getElementById('wallet-connect-btn').onclick = () => {
-    const address = prompt('Enter wallet address:');
-    if (address) {
-        getWalletAnalytics(address.trim());
-    }
-};
-
-// Click handler
-document.getElementById('wallet-connect-btn').onclick = () => {
-    const address = prompt('Enter wallet address to track:');
+    const address = prompt('Enter Solana wallet address:');
     if (address?.trim()) {
         getWalletAnalytics(address.trim());
     }
