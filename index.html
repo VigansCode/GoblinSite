@@ -1732,6 +1732,9 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(updateWalletAnalytics, 30000);
 });
 
+// Create a persistent connection
+const connection = new solanaWeb3.Connection('https://api.mainnet-beta.solana.com');
+
 async function getWalletAnalytics(address) {
     const solBalanceEl = document.getElementById('solBalance');
     const totalTradesEl = document.getElementById('totalTrades');
@@ -1739,24 +1742,18 @@ async function getWalletAnalytics(address) {
     const currentBalanceEl = document.getElementById('balance');
 
     try {
-        // Validate address format
-        if (!address.match(/^[1-9A-HJ-NP-Za-km-z]{32,44}$/)) {
-            throw new Error('Invalid Solana address format');
-        }
-
-        // Show loading state
+        // Reset previous values
         solBalanceEl.textContent = 'Loading...';
         currentBalanceEl.textContent = 'Loading...';
-        
-        // Initialize connection and public key
-        const connection = new solanaWeb3.Connection('https://api.mainnet-beta.solana.com', 'confirmed');
-        const publicKey = new solanaWeb3.PublicKey(address);
+        totalTradesEl.textContent = 'Loading...';
+        tradingVolumeEl.textContent = 'Loading...';
 
         // Get SOL balance
-        const balance = await connection.getBalance(publicKey);
-        const solBalance = balance / solanaWeb3.LAMPORTS_PER_SOL;
+        const publicKey = new solanaWeb3.PublicKey(address);
+        const lamports = await connection.getBalance(publicKey);
+        const solBalance = lamports / solanaWeb3.LAMPORTS_PER_SOL;
 
-        // Get SOL price from Dexscreener
+        // Get SOL price
         const response = await fetch('https://api.dexscreener.com/latest/dex/tokens/solana/SOL');
         const data = await response.json();
         const solPrice = parseFloat(data.pairs[0].priceUsd);
@@ -1764,20 +1761,14 @@ async function getWalletAnalytics(address) {
         // Calculate USD value
         const usdValue = solBalance * solPrice;
 
-        // Get recent transactions
-        const transactions = await connection.getConfirmedSignaturesForAddress2(
-            publicKey, 
-            { limit: 100 }
-        );
-
         // Update UI
-        solBalanceEl.textContent = `${solBalance.toFixed(4)} SOL`;
+        solBalanceEl.textContent = `${solBalance.toFixed(2)} SOL`;
         currentBalanceEl.textContent = `$${usdValue.toFixed(2)}`;
-        totalTradesEl.textContent = transactions.length;
+        totalTradesEl.textContent = 'Connected';
         tradingVolumeEl.textContent = `$${(data.pairs[0].volume.h24/1000000).toFixed(2)}M`;
 
     } catch (error) {
-        console.error('Wallet analytics error:', error);
+        console.error('Error:', error);
         solBalanceEl.textContent = 'Error';
         currentBalanceEl.textContent = '$0.00';
         totalTradesEl.textContent = 'Error';
