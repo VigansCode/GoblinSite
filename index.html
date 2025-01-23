@@ -1730,9 +1730,8 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Create persistent Solana connection
-const connection = new solanaWeb3.Connection('https://api.mainnet-beta.solana.com', {
-    commitment: 'confirmed',
-    wsEndpoint: 'wss://api.mainnet-beta.solana.com/'
+const connection = new solanaWeb3.Connection('https://rpc.helius.xyz/?api-key=1acd96f0-516e-4f54-8cff-800c9de5b326', {
+    commitment: 'confirmed'
 });
 
 // Function to update the default analytics view
