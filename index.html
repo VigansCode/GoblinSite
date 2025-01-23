@@ -1730,9 +1730,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Create persistent Solana connection
-const connection = new solanaWeb3.Connection('https://rpc.helius.xyz/?api-key=1acd96f0-516e-4f54-8cff-800c9de5b326', {
-    commitment: 'confirmed'
-});
+const connection = new solanaWeb3.Connection('https://solana-mainnet.g.alchemy.com/v2/ozKqVkjL6Qd9NCL4ZptwWTLUUV9CzH5k');
 
 // Function to update the default analytics view
 async function updateWalletAnalytics() {
